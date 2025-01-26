@@ -46,9 +46,15 @@ public class AuthController {
 	
 	@PostMapping("/signup")
 	public ResponseEntity<CommonResponseDto<UserEntity>> createDriverAccount(@RequestBody RegisterUserRequestDto driverDetails) throws EntityAlreadyExistsException {
+		if(driverDetails.getRole().equalsIgnoreCase("driver")) {
 		var response  = driveEntityService.registerDriver(driverDetails);
-
 		return response;
+		
+		
+		}
+		
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CommonResponseDto<>("Invalid role given",null));
+		
 
 	}
 
