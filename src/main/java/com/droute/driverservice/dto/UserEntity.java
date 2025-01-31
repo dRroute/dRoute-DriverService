@@ -1,4 +1,4 @@
-package com.droute.driverservice.entity;
+package com.droute.driverservice.dto;
 
 public class UserEntity {
 
