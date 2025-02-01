@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.droute.driverservice.dto.CommonResponseDto;
 import com.droute.driverservice.entity.JourneyDetailEntity;
 import com.droute.driverservice.service.JourneyDetailService;
-import com.droute.driverservice.service.LocationDetailsService;
 
 @RestController
 @RequestMapping("/api/journey-details")
@@ -23,16 +22,11 @@ public class JourneyDetailController {
 
     @Autowired
     private JourneyDetailService journeyDetailService;
-    @Autowired
-    private LocationDetailsService locationDetailsService;
+  
 
     @PostMapping
     public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> postJourneyDetails(@RequestBody JourneyDetailEntity journeyDetail) {
     	
-//    	var source = locationDetailsService.postLocationDetails(journeyDetail.getJourneySource());
-//    	var destination = locationDetailsService.postLocationDetails(journeyDetail.getJourneyDestination());
-//    	journeyDetail.setJourneySource(source);
-//    	journeyDetail.setJourneyDestination(destination);
         JourneyDetailEntity savedJourneyDetail = journeyDetailService.postJourneyDetail(journeyDetail);
         CommonResponseDto<JourneyDetailEntity> crd = new CommonResponseDto<>("Journey details created successfully", savedJourneyDetail);
         return new ResponseEntity<>(crd, HttpStatus.CREATED);

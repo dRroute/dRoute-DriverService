@@ -3,7 +3,6 @@ package com.droute.driverservice.entity;
 import java.time.LocalDateTime;
 
 import com.droute.driverservice.enums.JourneyStatus;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
