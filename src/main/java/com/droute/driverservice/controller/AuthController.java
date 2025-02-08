@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.droute.driverservice.dto.CommonResponseDto;
 import com.droute.driverservice.dto.RegisterUserRequestDto;
-import com.droute.driverservice.entity.UserEntity;
+import com.droute.driverservice.dto.UserEntity;
 import com.droute.driverservice.exception.EntityAlreadyExistsException;
 import com.droute.driverservice.service.DriverEntityService;
 
