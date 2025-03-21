@@ -13,36 +13,36 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.droute.driverservice.dto.ImageUploadResponseDto;
+import com.droute.driverservice.dto.response.ImageUploadResponseDto;
+import com.droute.driverservice.entity.DocumentEntity;
+import com.droute.driverservice.exception.EntityAlreadyExistsException;
+import com.droute.driverservice.service.DocumentEntityService;
 import com.droute.driverservice.service.DriverEntityService;
 import com.droute.driverservice.service.ImageUploadService;
 
-import jakarta.persistence.EntityNotFoundException;
-
 @RestController
 @RequestMapping("/api/file")
-public class ImageController {
+public class DocumentController {
 
     @Autowired
     private ImageUploadService imageUploadService;
     @Autowired
     private DriverEntityService driverEntityService;
+    @Autowired
+    private DocumentEntityService documentEntityService;
 
     @PostMapping("/uploadToGoogleDrive")
     public ResponseEntity<ImageUploadResponseDto> handleFileUpload(
-            @RequestParam("image") MultipartFile file, 
-            @RequestParam("userId") Long userId, 
-            @RequestParam("documentName") String documentName) throws IOException, GeneralSecurityException {
+            @RequestParam("file") MultipartFile file, 
+            @RequestParam("driverId") Long driverId, 
+            @RequestParam("documentName") String documentName) throws IOException, GeneralSecurityException, EntityAlreadyExistsException {
         
         if (file.isEmpty()) {
             return new ResponseEntity<>(new ImageUploadResponseDto(400, "File is empty", null), HttpStatus.BAD_REQUEST);
         }
         
-        var existingUser = driverEntityService.getUserById(userId);
-		if(existingUser.getStatusCode() != HttpStatus.OK || existingUser.getBody().getEntity()==null) {
-			throw new EntityNotFoundException("User Not exists with given Id");
-		}
-
+        var existingDriver = driverEntityService.findDriverByDriverId(driverId);
+        
         // Validate file extension
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null || (!originalFilename.endsWith(".png") && 
@@ -55,17 +55,33 @@ public class ImageController {
         String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
 
         // Create a custom file name using userId & documentName
-        String customFileName = userId + "_" + documentName.replaceAll("\\s+", "_") + fileExtension;
+        String customFileName = existingDriver.getDriverId() + "_" + documentName.replaceAll("\\s+", "_") ;
+        String customFileNameWithExtension = customFileName + fileExtension;
 
         // Create a temporary file with correct extension
         File tempFile = File.createTempFile("temp", fileExtension);
         file.transferTo(tempFile);
 
         // Upload to Google Drive with the custom name
-        ImageUploadResponseDto res = imageUploadService.uploadImageToDrive(tempFile, customFileName);
+        ImageUploadResponseDto res = imageUploadService.uploadImageToDrive(tempFile, customFileNameWithExtension);
+        if (res.getStatus() == 200) {
+            // Delete the temporary file after successful upload
+            tempFile.delete();
+            var document = new DocumentEntity();
+            document.setDocumentName(customFileName);
+            document.setDocumentType(fileExtension);
+            document.setDocumentUrl(res.getUrl());
+            documentEntityService.postDocument(document , existingDriver.getDriverId(), customFileName);
+            return new ResponseEntity<>(res, HttpStatus.OK);
 
-        System.out.println(res);
-        return new ResponseEntity<>(res, HttpStatus.OK);
+            
+        } else if(res.getStatus() == 400){
+            return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        
     }
 
 }

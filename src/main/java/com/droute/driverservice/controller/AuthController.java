@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.droute.driverservice.dto.CommonResponseDto;
-import com.droute.driverservice.dto.RegisterUserRequestDto;
 import com.droute.driverservice.dto.UserEntity;
+import com.droute.driverservice.dto.request.RegisterUserRequestDto;
+import com.droute.driverservice.dto.response.CommonResponseDto;
 import com.droute.driverservice.entity.Role;
 import com.droute.driverservice.exception.EntityAlreadyExistsException;
 import com.droute.driverservice.service.DriverEntityService;
@@ -62,8 +62,6 @@ public class AuthController {
 		}
 		
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CommonResponseDto<>("Invalid role given",null));
-		
-
 	}
 
 }

@@ -1,4 +1,4 @@
-package com.droute.driverservice.dto;
+package com.droute.driverservice.dto.response;
 
 public class ResponseDriverProfileDetailsDto {
 

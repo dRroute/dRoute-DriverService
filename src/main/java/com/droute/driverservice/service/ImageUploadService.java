@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 
-import com.droute.driverservice.dto.ImageUploadResponseDto;
+import com.droute.driverservice.dto.response.ImageUploadResponseDto;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.json.JsonFactory;

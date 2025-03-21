@@ -14,11 +14,12 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import com.droute.driverservice.dto.CommonResponseDto;
-import com.droute.driverservice.dto.RegisterUserRequestDto;
-import com.droute.driverservice.dto.RequestDriverProfileDetailsDto;
 import com.droute.driverservice.dto.UserEntity;
+import com.droute.driverservice.dto.request.RegisterUserRequestDto;
+import com.droute.driverservice.dto.request.RequestDriverProfileDetailsDto;
+import com.droute.driverservice.dto.response.CommonResponseDto;
 import com.droute.driverservice.entity.DriverEntity;
+import com.droute.driverservice.entity.Role;
 import com.droute.driverservice.exception.EntityAlreadyExistsException;
 import com.droute.driverservice.exception.ErrorMessage;
 import com.droute.driverservice.repository.DriverEntityRepository;
@@ -42,7 +43,9 @@ public class DriverEntityService {
 
 	private final String commonUserEndPoint = "http://localhost:8080/droute-user-service/api/user";
 	
-	
+	public DriverEntity findDriverByDriverId(Long driverId) {
+		return driverEntityRepository.findById(driverId).orElseThrow(() -> new EntityNotFoundException("Driver not found with given id = " + driverId));
+	}
 	private CommonResponseDto<UserEntity> handleErrorResponse(String responseBody) {
 	    try {
 	        ObjectMapper objectMapper = new ObjectMapper();
@@ -161,22 +164,30 @@ public class DriverEntityService {
 	public DriverEntity completeDriverProfile(RequestDriverProfileDetailsDto driverProfileDetails) throws EntityAlreadyExistsException {
 		
 		var existingUser = getUserById(driverProfileDetails.getUserId());
-		if(existingUser.getStatusCode() != HttpStatus.OK || !existingUser.getBody().getEntity().getRole().equalsIgnoreCase("DRIVER")) {
+
+		// case when user with driver role not found
+		if(existingUser.getStatusCode() != HttpStatus.OK || !existingUser.getBody().getEntity().getRoles().contains(Role.valueOf("DRIVER"))) {
 			throw new EntityNotFoundException("Driver Not exists with given Id");
 		}
+		// Case when driver already exists i.e no need to enter the details again
 		if(getDriverByUserId(driverProfileDetails.getUserId()) != null) throw new EntityAlreadyExistsException("Driver already exists!");
 		
+		// Case when driver's profile does not exists
 		var driver = new DriverEntity();
+		driver.setDriverDetailsId(driverProfileDetails.getUserId());
 		driver.setVehicleNumber(driverProfileDetails.getVehicleNumber());
+		driver.setDrivingLicenceNo(driverProfileDetails.getDrivingLicenceNo());
 		driver.setVehicleName(driverProfileDetails.getVehicleName());
 		driver.setVehicleType(driverProfileDetails.getVehicleType());
-		driver.setDrivingLicenceNo(driverProfileDetails.getDrivingLicenceNo());
+		driver.setRcNumber(driverProfileDetails.getRcNumber());
+		
+		
 		driver.setAccountHolderName(driverProfileDetails.getAccountHolderName());
+		driver.setDriverBankName(driverProfileDetails.getDriverBankName());
 		driver.setDriverAccountNo(driverProfileDetails.getDriverAccountNo());
-		driver.setDriverDetailsId(driverProfileDetails.getUserId());
 		driver.setDriverIfsc(driverProfileDetails.getDriverIfsc());
 		driver.setDriverUpiId(driverProfileDetails.getDriverUpiId());
-		
+		driver.setAadharNumber(driverProfileDetails.getAadharNumber());
 		logger.info(""+driver);
 		
 		return driverEntityRepository.save(driver);

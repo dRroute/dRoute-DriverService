@@ -1,4 +1,4 @@
-package com.droute.driverservice.dto;
+package com.droute.driverservice.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

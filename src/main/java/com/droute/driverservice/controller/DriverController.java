@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.droute.driverservice.dto.CommonResponseDto;
-import com.droute.driverservice.dto.RequestDriverProfileDetailsDto;
+import com.droute.driverservice.dto.request.RequestDriverProfileDetailsDto;
+import com.droute.driverservice.dto.response.CommonResponseDto;
 import com.droute.driverservice.entity.DriverEntity;
 import com.droute.driverservice.exception.EntityAlreadyExistsException;
 import com.droute.driverservice.service.DriverEntityService;
@@ -28,6 +28,9 @@ public class DriverController {
     	var crd = new CommonResponseDto<>("Driver founded Successfully.", savedDriver);
         return ResponseEntity.status(HttpStatus.CREATED).body(crd);
     }
+
+   
+    
 /*
     @GetMapping("/{id}")
     public ResponseEntity<DriverEntity> getDriverById(@PathVariable Long id) {

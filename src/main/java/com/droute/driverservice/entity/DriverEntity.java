@@ -1,6 +1,7 @@
 package com.droute.driverservice.entity;
 
 import java.util.List;
+import java.util.Set;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -35,17 +36,20 @@ public class DriverEntity {
     private String vehicleName;
     private String vehicleType;
     private String rcNumber;
+
     
     @OneToMany(mappedBy = "ratingId", cascade = CascadeType.ALL)
     private List<RatingEntity> ratings;
     
     // Account Details
     private String accountHolderName;
+    private String driverBankName;
     private String driverAccountNo;
     private String driverIfsc;
     private String driverUpiId;
+    private String aadharNumber;
     
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "driver_id") // Foreign key in DocumentEntity table
-    private List<DocumentEntity> documents;
+    private Set<DocumentEntity> documents;
 }

@@ -49,7 +49,6 @@ public class JourneyDetailEntity {
 
     public JourneyDetailEntity() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 
