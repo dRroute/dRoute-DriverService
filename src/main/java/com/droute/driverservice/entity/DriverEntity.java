@@ -49,7 +49,6 @@ public class DriverEntity {
     private String driverUpiId;
     private String aadharNumber;
     
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "driver_id") // Foreign key in DocumentEntity table
+    @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<DocumentEntity> documents;
 }

@@ -8,13 +8,11 @@ import org.springframework.stereotype.Repository;
 import com.droute.driverservice.entity.DocumentEntity;
 
 @Repository
-public interface DocumentEntityRepository extends JpaRepository<DocumentEntity, Long>{
+public interface DocumentEntityRepository extends JpaRepository<DocumentEntity, Long> {
 
-    void deleteByDriverId(Long driverId);
+    // Corrected method for finding documents by driverId
+    Set<DocumentEntity> findByDriver_DriverId(Long driverId);  
 
-    Set<DocumentEntity> findByDriverId(Long driverId);
-
-	
-
-	
+    // Corrected method for deleting documents by driverId
+    void deleteByDriver_DriverId(Long driverId);  
 }

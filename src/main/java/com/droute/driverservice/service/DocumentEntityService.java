@@ -1,7 +1,10 @@
 package com.droute.driverservice.service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,7 +36,7 @@ public class DocumentEntityService {
 
     public void deleteDocumentByDriverId(Long driverId) {
         getDriverById(driverId);
-        documentEntityRepository.deleteByDriverId(driverId);
+        documentEntityRepository.deleteByDriver_DriverId(driverId);
     }
     public DocumentEntity getDocumentById(Long documentId) {
         return documentEntityRepository.findById(documentId).orElseThrow(
@@ -41,7 +44,7 @@ public class DocumentEntityService {
     }
     public Set<DocumentEntity> getDocumentByDriverId(Long driverId) {
         getDriverById(driverId);
-        return documentEntityRepository.findByDriverId(driverId);
+        return documentEntityRepository.findByDriver_DriverId(driverId);
     }
     public DriverEntity postDocument(DocumentEntity document, Long driverId, String documentName) throws EntityAlreadyExistsException {
         // getDocumentById(documentId);
@@ -65,6 +68,22 @@ public class DocumentEntityService {
     }
     public DocumentEntity updateDocumentById(DocumentEntity document) {
         return documentEntityRepository.save(document);
+    }
+    public Set<DocumentEntity> getAllDocumentsByDriverId(long driverId) {
+        var driver = getDriverById(driverId);
+        return driver.getDocuments();
+    }
+    public Set<DocumentEntity> getDocumentByDriverIdAndDocumentName(long driverId, String documentName) {
+        var driver = getDriverById(driverId);
+        var documents = driver.getDocuments();
+        documents = documents.stream()
+            .filter(doc -> doc.getDocumentName().contains(documentName)).collect(Collectors.toSet());
+         
+        if (documents.isEmpty()) {
+            throw new EntityNotFoundException("Document not found with given name = " + documentName);
+            
+        }
+        return documents;
     }
 
 }

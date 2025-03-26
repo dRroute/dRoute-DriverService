@@ -3,6 +3,7 @@ package com.droute.driverservice.controller;
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,12 +14,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.droute.driverservice.dto.response.CommonResponseDto;
 import com.droute.driverservice.dto.response.ImageUploadResponseDto;
 import com.droute.driverservice.entity.DocumentEntity;
 import com.droute.driverservice.exception.EntityAlreadyExistsException;
 import com.droute.driverservice.service.DocumentEntityService;
 import com.droute.driverservice.service.DriverEntityService;
 import com.droute.driverservice.service.ImageUploadService;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 @RestController
 @RequestMapping("/api/file")
@@ -31,6 +35,8 @@ public class DocumentController {
     @Autowired
     private DocumentEntityService documentEntityService;
 
+
+    //Api to upload document one at a time.
     @PostMapping("/uploadToGoogleDrive")
     public ResponseEntity<ImageUploadResponseDto> handleFileUpload(
             @RequestParam("file") MultipartFile file, 
@@ -81,7 +87,30 @@ public class DocumentController {
             return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        
     }
+
+    // Get all documents by driverId
+    @GetMapping("/getAllDocumentsByDriverId")
+    public ResponseEntity<CommonResponseDto<Set<DocumentEntity>>> getAllDocumentsByDriverId(@RequestParam String driverId) {
+        var documents = documentEntityService.getAllDocumentsByDriverId(Long.parseLong(driverId));
+        return ResponseEntity.ok(new CommonResponseDto<>("Documents fetched successfully.", documents));
+  
+    }
+
+    // get document by documentId
+    @GetMapping("/getDocumentById")
+    public ResponseEntity<CommonResponseDto<DocumentEntity>> getDocumentById(@RequestParam String documentId) {
+        var document = documentEntityService.getDocumentById(Long.parseLong(documentId));
+        return ResponseEntity.ok(new CommonResponseDto<>("Document fetched successfully.", document));
+    }
+    
+    //Get Document By Name and Driver Id
+    @GetMapping("/getDocumentByName")
+    public ResponseEntity<CommonResponseDto<Set<DocumentEntity>>> getMethodName(@RequestParam String driverId, 
+        @RequestParam String documentName) {
+        var documents = documentEntityService.getDocumentByDriverIdAndDocumentName(Long.parseLong(driverId), documentName );
+        return ResponseEntity.ok(new CommonResponseDto<>("Document fetched successfully.", documents));
+    }
+    
 
 }
