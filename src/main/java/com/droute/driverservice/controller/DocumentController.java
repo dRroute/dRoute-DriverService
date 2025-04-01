@@ -37,7 +37,7 @@ public class DocumentController {
 
 
     //Api to upload document one at a time.
-    @PostMapping("/uploadToGoogleDrive")
+    @PostMapping(value="/uploadToGoogleDrive", consumes = "multipart/form-data")
     public ResponseEntity<ImageUploadResponseDto> handleFileUpload(
             @RequestParam("file") MultipartFile file, 
             @RequestParam("driverId") Long driverId, 
@@ -111,6 +111,10 @@ public class DocumentController {
         var documents = documentEntityService.getDocumentByDriverIdAndDocumentName(Long.parseLong(driverId), documentName );
         return ResponseEntity.ok(new CommonResponseDto<>("Document fetched successfully.", documents));
     }
+
+    //Delete Document By Id
+
+    //Update Document By Id
     
 
 }

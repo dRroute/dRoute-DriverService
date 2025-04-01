@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.droute.driverservice.dto.request.JourneyDetailsRequestDto;
 import com.droute.driverservice.dto.response.CommonResponseDto;
 import com.droute.driverservice.entity.JourneyDetailEntity;
 import com.droute.driverservice.service.JourneyDetailService;
@@ -24,8 +25,8 @@ public class JourneyDetailController {
     private JourneyDetailService journeyDetailService;
   
 
-    @PostMapping
-    public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> postJourneyDetails(@RequestBody JourneyDetailEntity journeyDetail) {
+    @PostMapping("/")
+    public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> postJourneyDetails(@RequestBody JourneyDetailsRequestDto journeyDetail) {
     	
         JourneyDetailEntity savedJourneyDetail = journeyDetailService.postJourneyDetail(journeyDetail);
         CommonResponseDto<JourneyDetailEntity> crd = new CommonResponseDto<>("Journey details created successfully", savedJourneyDetail);
@@ -39,9 +40,8 @@ public class JourneyDetailController {
         return new ResponseEntity<>(crd, HttpStatus.OK);
     }
 
-    @PutMapping("/{journeyId}")
-    public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> updateJourneyDetailsById(@PathVariable Long journeyId, @RequestBody JourneyDetailEntity journeyDetail) {
-        journeyDetail.setJourneyId(journeyId);  // Ensure the correct ID is set for updating
+    @PutMapping("/")
+    public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> updateJourneyDetailsById( @RequestBody JourneyDetailEntity journeyDetail) {
         JourneyDetailEntity updatedJourneyDetail = journeyDetailService.updateJourneyDetailById(journeyDetail);
         CommonResponseDto<JourneyDetailEntity> crd = new CommonResponseDto<>("Journey details updated successfully", updatedJourneyDetail);
         return new ResponseEntity<>(crd, HttpStatus.OK);
