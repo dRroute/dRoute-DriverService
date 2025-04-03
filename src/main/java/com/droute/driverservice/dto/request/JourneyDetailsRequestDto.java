@@ -2,7 +2,6 @@ package com.droute.driverservice.dto.request;
 
 import java.time.LocalDateTime;
 
-import com.droute.driverservice.entity.LocationDetailsEntity;
 import com.droute.driverservice.enums.JourneyStatus;
 
 import lombok.AllArgsConstructor;
