@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.droute.driverservice.dto.response.CommonResponseDto;
 import com.droute.driverservice.dto.response.ImageUploadResponseDto;
+import com.droute.driverservice.dto.response.ResponseBuilder;
 import com.droute.driverservice.entity.DocumentEntity;
 import com.droute.driverservice.exception.EntityAlreadyExistsException;
 import com.droute.driverservice.service.DocumentEntityService;
@@ -93,7 +94,7 @@ public class DocumentController {
     @GetMapping("/getAllDocumentsByDriverId")
     public ResponseEntity<CommonResponseDto<Set<DocumentEntity>>> getAllDocumentsByDriverId(@RequestParam String driverId) {
         var documents = documentEntityService.getAllDocumentsByDriverId(Long.parseLong(driverId));
-        return ResponseEntity.ok(new CommonResponseDto<>("Documents fetched successfully.", documents));
+        return ResponseBuilder.success(HttpStatus.OK,"Documents fetched successfully.", documents);
   
     }
 
@@ -101,7 +102,7 @@ public class DocumentController {
     @GetMapping("/getDocumentById")
     public ResponseEntity<CommonResponseDto<DocumentEntity>> getDocumentById(@RequestParam String documentId) {
         var document = documentEntityService.getDocumentById(Long.parseLong(documentId));
-        return ResponseEntity.ok(new CommonResponseDto<>("Document fetched successfully.", document));
+        return ResponseBuilder.success(HttpStatus.OK,"Document fetched successfully.", document);
     }
     
     //Get Document By Name and Driver Id
@@ -109,7 +110,7 @@ public class DocumentController {
     public ResponseEntity<CommonResponseDto<Set<DocumentEntity>>> getMethodName(@RequestParam String driverId, 
         @RequestParam String documentName) {
         var documents = documentEntityService.getDocumentByDriverIdAndDocumentName(Long.parseLong(driverId), documentName );
-        return ResponseEntity.ok(new CommonResponseDto<>("Document fetched successfully.", documents));
+        return ResponseBuilder.success(HttpStatus.OK,"Document fetched successfully.", documents);
     }
 
     //Delete Document By Id

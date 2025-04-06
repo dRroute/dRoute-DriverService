@@ -10,9 +10,11 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class CommonResponseDto<T> {
-	
-	private String message;
-	private T entity;
-	
 
+    private String message;
+    private T entity;
+    private int statusCode;
+    private String timestamp;
+    private String traceId;
+    private String errorCode;
 }

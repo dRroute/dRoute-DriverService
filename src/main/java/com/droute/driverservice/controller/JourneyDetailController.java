@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.droute.driverservice.dto.request.JourneyDetailsRequestDto;
 import com.droute.driverservice.dto.response.CommonResponseDto;
+import com.droute.driverservice.dto.response.ResponseBuilder;
 import com.droute.driverservice.entity.JourneyDetailEntity;
 import com.droute.driverservice.service.JourneyDetailService;
 
@@ -29,28 +30,24 @@ public class JourneyDetailController {
     public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> postJourneyDetails(@RequestBody JourneyDetailsRequestDto journeyDetail) {
     	
         JourneyDetailEntity savedJourneyDetail = journeyDetailService.postJourneyDetail(journeyDetail);
-        CommonResponseDto<JourneyDetailEntity> crd = new CommonResponseDto<>("Journey details created successfully", savedJourneyDetail);
-        return new ResponseEntity<>(crd, HttpStatus.CREATED);
+        return ResponseBuilder.success(HttpStatus.CREATED,"Journey details created successfully", savedJourneyDetail);
     }
 
     @GetMapping("/{journeyId}")
     public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> getJourneyDetailsById(@PathVariable Long journeyId) {
         JourneyDetailEntity journeyDetail = journeyDetailService.getJourneyDetailById(journeyId);
-        CommonResponseDto<JourneyDetailEntity> crd = new CommonResponseDto<>("Journey details fetched successfully", journeyDetail);
-        return new ResponseEntity<>(crd, HttpStatus.OK);
+        return ResponseBuilder.success(HttpStatus.OK,"Journey details fetched successfully", journeyDetail);
     }
 
     @PutMapping("/")
     public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> updateJourneyDetailsById( @RequestBody JourneyDetailEntity journeyDetail) {
         JourneyDetailEntity updatedJourneyDetail = journeyDetailService.updateJourneyDetailById(journeyDetail);
-        CommonResponseDto<JourneyDetailEntity> crd = new CommonResponseDto<>("Journey details updated successfully", updatedJourneyDetail);
-        return new ResponseEntity<>(crd, HttpStatus.OK);
+        return ResponseBuilder.success(HttpStatus.OK,"Journey details updated successfully", updatedJourneyDetail);
     }
 
     @DeleteMapping("/{journeyId}")
     public ResponseEntity<CommonResponseDto<Void>> deleteJourneyDetailsById(@PathVariable Long journeyId) {
         journeyDetailService.deleteJourneyDetailById(journeyId);
-        CommonResponseDto<Void> crd = new CommonResponseDto<>("Journey details deleted successfully", null);
-        return new ResponseEntity<>(crd, HttpStatus.NO_CONTENT);
+        return ResponseBuilder.success(HttpStatus.OK, "Journey details deleted successfully", null);
     }
 }

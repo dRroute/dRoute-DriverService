@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.droute.driverservice.dto.request.RequestDriverProfileDetailsDto;
 import com.droute.driverservice.dto.response.CommonResponseDto;
+import com.droute.driverservice.dto.response.ResponseBuilder;
 import com.droute.driverservice.entity.DriverEntity;
 import com.droute.driverservice.exception.EntityAlreadyExistsException;
 import com.droute.driverservice.service.DriverEntityService;
@@ -25,8 +26,7 @@ public class DriverController {
     @PostMapping("/profile-complete")
     public ResponseEntity<CommonResponseDto<DriverEntity>> createDriver(@RequestBody RequestDriverProfileDetailsDto driverProfileDetails) throws EntityAlreadyExistsException {
     	DriverEntity savedDriver = driveEntityService.completeDriverProfile(driverProfileDetails);
-    	var crd = new CommonResponseDto<>("Driver founded Successfully.", savedDriver);
-        return ResponseEntity.status(HttpStatus.CREATED).body(crd);
+        return ResponseBuilder.success(HttpStatus.CREATED, "Driver founded Successfully.", savedDriver);
     }
 
    

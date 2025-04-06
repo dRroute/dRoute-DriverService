@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.droute.driverservice.dto.response.CommonResponseDto;
+import com.droute.driverservice.dto.response.ResponseBuilder;
 import com.droute.driverservice.entity.LocationDetailsEntity;
 import com.droute.driverservice.service.LocationDetailsService;
 
@@ -26,29 +27,24 @@ public class LocationDetailsController {
     @PostMapping
     public ResponseEntity<CommonResponseDto<LocationDetailsEntity>> postLocationDetails(@RequestBody LocationDetailsEntity locationDetails) {
         LocationDetailsEntity savedLocation = locationDetailsService.postLocationDetails(locationDetails);
-        CommonResponseDto<LocationDetailsEntity> crd = new CommonResponseDto<>("Location details created successfully", savedLocation);
-        return new ResponseEntity<>(crd, HttpStatus.CREATED);
+        return ResponseBuilder.success(HttpStatus.CREATED,"Location details created successfully",savedLocation);
     }
 
     @GetMapping("/{locationId}")
     public ResponseEntity<CommonResponseDto<LocationDetailsEntity>> getLocationDetailsById(@PathVariable Long locationId) {
         LocationDetailsEntity location = locationDetailsService.getLocationDetailsById(locationId);
-        CommonResponseDto<LocationDetailsEntity> crd = new CommonResponseDto<>("Location details fetched successfully", location);
-        return new ResponseEntity<>(crd, HttpStatus.OK);
+        return ResponseBuilder.success(HttpStatus.OK,"Location details fetched successfully", location);
     }
 
     @PutMapping("/{locationId}")
-    public ResponseEntity<CommonResponseDto<LocationDetailsEntity>> updateLocationDetailsById(@PathVariable Long locationId, @RequestBody LocationDetailsEntity locationDetails) {
-        locationDetails.setLocationId(locationId);  // Ensure the correct ID is set for updating
+    public ResponseEntity<CommonResponseDto<LocationDetailsEntity>> updateLocationDetailsById( @RequestBody LocationDetailsEntity locationDetails) {
         LocationDetailsEntity updatedLocation = locationDetailsService.updateLocationDetailsById(locationDetails);
-        CommonResponseDto<LocationDetailsEntity> crd = new CommonResponseDto<>("Location details updated successfully", updatedLocation);
-        return new ResponseEntity<>(crd, HttpStatus.OK);
+        return ResponseBuilder.success(HttpStatus.OK, "Location details updated successfully", updatedLocation );
     }
 
     @DeleteMapping("/{locationId}")
     public ResponseEntity<CommonResponseDto<Void>> deleteLocationDetailsById(@PathVariable Long locationId) {
         locationDetailsService.deleteLocationDetailsById(locationId);
-        CommonResponseDto<Void> crd = new CommonResponseDto<>("Location details deleted successfully", null);
-        return new ResponseEntity<>(crd, HttpStatus.OK);
+        return ResponseBuilder.success(HttpStatus.OK, "Location details deleted successfully", null );
     }
 }

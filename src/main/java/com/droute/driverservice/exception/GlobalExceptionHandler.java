@@ -7,31 +7,44 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import com.droute.driverservice.dto.UserEntity;
+import com.droute.driverservice.dto.response.CommonResponseDto;
+import com.droute.driverservice.dto.response.ResponseBuilder;
+
 import jakarta.persistence.EntityNotFoundException;
 
 @ControllerAdvice
 @ResponseStatus
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
-	
+
 	@ExceptionHandler(EntityNotFoundException.class)
-	public ResponseEntity<ErrorMessage> entityNotFoundException(EntityNotFoundException exception) {
-
-		var errorMessage = new ErrorMessage(HttpStatus.NOT_FOUND, exception.getMessage());
+	public ResponseEntity<CommonResponseDto<UserEntity>> entityNotFoundException(EntityNotFoundException exception) {
 
 		logger.error(exception.getMessage());
- 
-		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+
+		return ResponseBuilder.failure(HttpStatus.NOT_FOUND, exception.getMessage());
 
 	}
+
 	@ExceptionHandler(EntityAlreadyExistsException.class)
-	public ResponseEntity<ErrorMessage> entityNotFoundException(EntityAlreadyExistsException exception) {
-		
-		var errorMessage = new ErrorMessage(HttpStatus.BAD_REQUEST, exception.getMessage());
-		
+	public ResponseEntity<CommonResponseDto<UserEntity>> entityAlreadyExistException(
+			EntityAlreadyExistsException exception) {
+
 		logger.error(exception.getMessage());
-		
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
-		
+
+		return ResponseBuilder.failure(HttpStatus.CONFLICT, exception.getMessage());
+
 	}
- 
+
+	@ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<String> handleBadRequest(BadRequestException ex) {
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
+    @ExceptionHandler(UserServiceException.class)
+    public ResponseEntity<String> handleGenericUserService(UserServiceException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    }
+
 }
+
