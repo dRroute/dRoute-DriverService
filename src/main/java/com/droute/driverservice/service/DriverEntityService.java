@@ -81,6 +81,7 @@ public class DriverEntityService {
 
 	public CommonResponseDto<UserEntity> loginDriver(LoginUserRequestDto loginDetails)
 			throws BadRequestException, UserServiceException {
+				System.out.println("login driver called.");
 		return userServiceClient.loginUser(loginDetails);
 	}
 

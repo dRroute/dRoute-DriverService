@@ -37,9 +37,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 
 	@ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<String> handleBadRequest(BadRequestException ex) {
-        return ResponseEntity.badRequest().body(ex.getMessage());
-    }
+    public ResponseEntity<CommonResponseDto<UserEntity>> handleBadRequest(BadRequestException exception) {
+		logger.error("Bad Request: " + exception.getMessage(), exception);
+		return ResponseBuilder.failure(HttpStatus.BAD_REQUEST, exception.getMessage());
+	}
 
     @ExceptionHandler(UserServiceException.class)
     public ResponseEntity<String> handleGenericUserService(UserServiceException ex) {

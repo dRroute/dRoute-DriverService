@@ -28,9 +28,10 @@ public class CustomFeignErrorDecoder implements ErrorDecoder {
             String responseBody = Util.toString(response.body().asReader());
             ObjectMapper objectMapper = new ObjectMapper();
             CommonResponseDto<?> commonResponseDto = objectMapper.readValue(responseBody, CommonResponseDto.class);
-
+            
             // Extract the message field
             message = commonResponseDto.getMessage();
+            System.out.println("message = " + message);
         } catch (IOException ignored) {
             // Log or handle the exception if needed
         }
