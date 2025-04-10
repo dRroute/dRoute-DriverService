@@ -11,9 +11,10 @@ import com.droute.driverservice.dto.request.RegisterUserRequestDto;
 import com.droute.driverservice.dto.response.CommonResponseDto;
 
 @Component
-@FeignClient(name = "droute-user-service", path = "/droute-user-service/api/user")
+@FeignClient(name = "droute-cloud-gateway", path = "/api/user")
+// @FeignClient(name = "droute-user-service", path = "/api/user")
 public interface UserServiceClient {
-
+    
     @PostMapping("/auth/login")
     CommonResponseDto<UserEntity> loginUser(@RequestBody LoginUserRequestDto loginRequest);
 
