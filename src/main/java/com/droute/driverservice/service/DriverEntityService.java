@@ -3,40 +3,26 @@ package com.droute.driverservice.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.droute.driverservice.Feign.client.UserServiceClient;
 import com.droute.driverservice.dto.UserEntity;
 import com.droute.driverservice.dto.request.LoginUserRequestDto;
 import com.droute.driverservice.dto.request.RegisterUserRequestDto;
-import com.droute.driverservice.dto.request.RequestDriverProfileDetailsDto;
 import com.droute.driverservice.dto.response.CommonResponseDto;
 import com.droute.driverservice.entity.DriverEntity;
-import com.droute.driverservice.entity.Role;
 import com.droute.driverservice.exception.BadRequestException;
-import com.droute.driverservice.exception.EntityAlreadyExistsException;
-import com.droute.driverservice.exception.ErrorMessage;
 import com.droute.driverservice.exception.UserServiceException;
 import com.droute.driverservice.repository.DriverEntityRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class DriverEntityService {
 
-	@Autowired
-	private RestTemplate restTemplate;
+	// @Autowired
+	// private RestTemplate restTemplate;
 
 	private static final Logger logger = LoggerFactory.getLogger(DriverEntityService.class);
 
@@ -45,7 +31,7 @@ public class DriverEntityService {
 	@Autowired
 	private UserServiceClient userServiceClient;
 
-	private final String commonUserEndPoint = "http://localhost:8080/droute-user-service/api/user";
+	// private final String commonUserEndPoint = "http://localhost:8080/droute-user-service/api/user";
 
 	public DriverEntity findDriverByDriverId(Long driverId) {
 		return driverEntityRepository.findById(driverId)
