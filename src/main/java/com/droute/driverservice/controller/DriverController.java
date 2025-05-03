@@ -26,7 +26,7 @@ public class DriverController {
     @PostMapping("/profile-complete")
     public ResponseEntity<CommonResponseDto<DriverEntity>> createDriver(@RequestBody RequestDriverProfileDetailsDto driverProfileDetails) throws EntityAlreadyExistsException {
     	DriverEntity savedDriver = driveEntityService.completeDriverProfile(driverProfileDetails);
-        return ResponseBuilder.success(HttpStatus.CREATED, "Driver founded Successfully.", savedDriver);
+        return ResponseBuilder.success(HttpStatus.CREATED, "Driver Details Saved Successfully.", savedDriver);
     }
 
    
