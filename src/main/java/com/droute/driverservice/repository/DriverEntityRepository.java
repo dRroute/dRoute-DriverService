@@ -9,5 +9,7 @@ import com.droute.driverservice.entity.DriverEntity;
 public interface DriverEntityRepository extends JpaRepository<DriverEntity, Long> {
 
 	DriverEntity findByDriverDetailsId(Long userId);
+
+	boolean existsByDriverDetailsId(Long userId);
 }
 

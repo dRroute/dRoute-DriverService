@@ -19,6 +19,8 @@ import com.droute.driverservice.entity.Role;
 import com.droute.driverservice.exception.EntityAlreadyExistsException;
 import com.droute.driverservice.service.DriverEntityService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/driver")
 public class AuthController {
@@ -56,7 +58,7 @@ public class AuthController {
 
 	@PostMapping("/signup")
 	public ResponseEntity<CommonResponseDto<UserEntity>> createDriverAccount(
-			@RequestBody RegisterUserRequestDto driverDetails) throws EntityAlreadyExistsException {
+			@Valid @RequestBody RegisterUserRequestDto driverDetails) throws EntityAlreadyExistsException {
 		// Check if the role is driver or not
 		if (driverDetails.getRole().equalsIgnoreCase("driver")) {
 		

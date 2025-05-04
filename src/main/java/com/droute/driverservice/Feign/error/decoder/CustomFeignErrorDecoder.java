@@ -17,7 +17,6 @@ import jakarta.persistence.EntityNotFoundException;
 
 public class CustomFeignErrorDecoder implements ErrorDecoder {
 
-    private final ErrorDecoder defaultDecoder = new Default();
 
     @Override
     public Exception decode(String methodKey, Response response) {
@@ -28,9 +27,10 @@ public class CustomFeignErrorDecoder implements ErrorDecoder {
             String responseBody = Util.toString(response.body().asReader());
             ObjectMapper objectMapper = new ObjectMapper();
             CommonResponseDto<?> commonResponseDto = objectMapper.readValue(responseBody, CommonResponseDto.class);
-
+            
             // Extract the message field
             message = commonResponseDto.getMessage();
+            System.out.println("message = " + message);
         } catch (IOException ignored) {
             // Log or handle the exception if needed
         }

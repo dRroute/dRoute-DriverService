@@ -18,6 +18,11 @@ public class ResponseBuilder {
         return ResponseEntity.status(status)
                 .body(buildResponse(status, message, null,  "DRI_"+ status.value()+"_"+status.name()));
     }
+    // Failure response for Validation
+    public static <T> ResponseEntity<CommonResponseDto<T>> failure(HttpStatus status, String message, T entity) {
+        return ResponseEntity.status(status)
+                .body(buildResponse(status, message, entity,  "DRI_VALIDATION_ERROR"));
+    }
 
     // Core builder
     private static <T> CommonResponseDto<T> buildResponse(HttpStatus status, String message, T entity,  String errorCode) {

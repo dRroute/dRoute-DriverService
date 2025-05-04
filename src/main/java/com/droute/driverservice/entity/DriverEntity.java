@@ -20,7 +20,7 @@ import lombok.ToString;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
+@ToString(exclude = {"ratings", "documents"})
 public class DriverEntity {
 
     @Id
