@@ -16,8 +16,16 @@ public class JourneyDetailService {
     @Autowired
     private JourneyDetailRepository journeyDetailRepository;
 
+    @Autowired
+    private DriverEntityService driverEntityService;
+
     public JourneyDetailEntity postJourneyDetail(JourneyDetailsRequestDto journeyDetail) {
         // Convert DTO to Entity
+
+        if (!driverEntityService.checkDriverExistByDriverId(journeyDetail.getDriverId())) {
+            throw new EntityNotFoundException("Driver not found with id = "+journeyDetail.getDriverId());
+            
+        }
 
         var sourceLocation = LocationDetailsEntity.builder()
                 .longitude(journeyDetail.getJourneySource().getLongitude())

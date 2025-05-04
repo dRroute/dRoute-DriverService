@@ -18,16 +18,18 @@ import com.droute.driverservice.dto.response.ResponseBuilder;
 import com.droute.driverservice.entity.JourneyDetailEntity;
 import com.droute.driverservice.service.JourneyDetailService;
 
+import jakarta.validation.Valid;
+
 @RestController
-@RequestMapping("/api/journey-details")
+@RequestMapping("/api/driver/journey-details")
 public class JourneyDetailController {
 
     @Autowired
     private JourneyDetailService journeyDetailService;
   
 
-    @PostMapping("/")
-    public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> postJourneyDetails(@RequestBody JourneyDetailsRequestDto journeyDetail) {
+    @PostMapping("")
+    public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> postJourneyDetails(@Valid @RequestBody JourneyDetailsRequestDto journeyDetail) {
     	
         JourneyDetailEntity savedJourneyDetail = journeyDetailService.postJourneyDetail(journeyDetail);
         return ResponseBuilder.success(HttpStatus.CREATED,"Journey details created successfully", savedJourneyDetail);
@@ -39,7 +41,7 @@ public class JourneyDetailController {
         return ResponseBuilder.success(HttpStatus.OK,"Journey details fetched successfully", journeyDetail);
     }
 
-    @PutMapping("/")
+    @PutMapping("")
     public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> updateJourneyDetailsById( @RequestBody JourneyDetailEntity journeyDetail) {
         JourneyDetailEntity updatedJourneyDetail = journeyDetailService.updateJourneyDetailById(journeyDetail);
         return ResponseBuilder.success(HttpStatus.OK,"Journey details updated successfully", updatedJourneyDetail);

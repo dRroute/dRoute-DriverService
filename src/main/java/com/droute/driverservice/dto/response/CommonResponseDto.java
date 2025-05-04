@@ -12,7 +12,7 @@ import lombok.ToString;
 public class CommonResponseDto<T> {
 
     private String message;
-    private T entity;
+    private T data;
     private int statusCode;
     private String timestamp;
     private String traceId;

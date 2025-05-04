@@ -37,7 +37,7 @@ public class AuthController {
 
 		}
 		var response = driveEntityService.loginDriver(loginDetails);
-		var driver = response.getEntity();
+		var driver = response.getData();
 
 		// This condition is added to check if the user is a driver or not
 		if (driver != null && (driver.getRoles().contains(Role.DRIVER) || driver.getRoles().contains(Role.ADMIN))) {
@@ -51,7 +51,7 @@ public class AuthController {
 
 			return ResponseBuilder.failure(HttpStatus.BAD_REQUEST, "Given credential is not associated with Driver Account.");
 		}
-		logger.info("driver = " + response.getEntity());
+		logger.info("driver = " + response.getData());
 		// When the driver is not found
 		return ResponseBuilder.failure(HttpStatus.BAD_REQUEST, "Driver Account not found."); // Return the ResponseEntity directly
 	}
@@ -63,7 +63,7 @@ public class AuthController {
 		if (driverDetails.getRole().equalsIgnoreCase("driver")) {
 		
 			var response = driveEntityService.registerDriver(driverDetails);
-			return ResponseBuilder.success(HttpStatus.CREATED, response.getMessage(), response.getEntity());
+			return ResponseBuilder.success(HttpStatus.CREATED, response.getMessage(), response.getData());
 
 		}
 		
