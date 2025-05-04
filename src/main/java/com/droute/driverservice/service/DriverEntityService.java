@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import com.droute.driverservice.Feign.client.UserServiceClient;
 import com.droute.driverservice.dto.UserEntity;
@@ -64,11 +63,15 @@ public class DriverEntityService {
 
 		return driverEntityRepository.existsByDriverDetailsId(userId);
 	}
+	public boolean checkDriverExistByDriverId(Long driverId) {
+
+		return driverEntityRepository.existsById(driverId);
+	}
 
 	public DriverEntity completeDriverProfile(RequestDriverProfileDetailsDto driverProfileDetails)
 			throws EntityAlreadyExistsException {
 
-		var existingUser = userServiceClient.getUserById(driverProfileDetails.getUserId()).getEntity();
+		var existingUser = userServiceClient.getUserById(driverProfileDetails.getUserId()).getData();
 		if (!existingUser.getRoles().contains(Role.DRIVER)) {
 			throw new BadRequestException("User id is not associated with driver account!");
 		}
@@ -98,35 +101,4 @@ public class DriverEntityService {
 
 	}
 
-	/*
-	 * // case when user with driver role not found
-	 * if (existingUser.getStatusCode() != HttpStatus.OK ||
-	 * !existingUser.getBody().getEntity().getRoles().contains(Role.valueOf("DRIVER"
-	 * ))) {
-	 * throw new EntityNotFoundException("Driver Not exists with given Id");
-	 * }
-	 * 
-	 * // Case when driver already exists i.e no need to enter the details again
-	 * if (getDriverByUserId(driverProfileDetails.getUserId()) != null)
-	 * throw new EntityAlreadyExistsException("Driver already exists!");
-	 * 
-	 * // Case when driver's profile does not exists
-	 * var driver = new DriverEntity();
-	 * driver.setDriverDetailsId(driverProfileDetails.getUserId());
-	 * driver.setVehicleNumber(driverProfileDetails.getVehicleNumber());
-	 * driver.setDrivingLicenceNo(driverProfileDetails.getDrivingLicenceNo());
-	 * driver.setVehicleName(driverProfileDetails.getVehicleName());
-	 * driver.setVehicleType(driverProfileDetails.getVehicleType());
-	 * driver.setRcNumber(driverProfileDetails.getRcNumber());
-	 * 
-	 * driver.setAccountHolderName(driverProfileDetails.getAccountHolderName());
-	 * driver.setDriverBankName(driverProfileDetails.getDriverBankName());
-	 * driver.setDriverAccountNo(driverProfileDetails.getDriverAccountNo());
-	 * driver.setDriverIfsc(driverProfileDetails.getDriverIfsc());
-	 * driver.setDriverUpiId(driverProfileDetails.getDriverUpiId());
-	 * driver.setAadharNumber(driverProfileDetails.getAadharNumber());
-	 * logger.info("" + driver);
-	 * 
-	 * return driverEntityRepository.save(driver);
-	 */
 }
