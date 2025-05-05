@@ -9,7 +9,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableFeignClients(basePackages = "com.droute.driverservice.Feign.client")
+@EnableFeignClients(basePackages = "com.droute.driverservice.feign.client")
 public class DriverServiceApplication {
 	private static final Logger logger = LoggerFactory.getLogger(DriverServiceApplication.class);
 

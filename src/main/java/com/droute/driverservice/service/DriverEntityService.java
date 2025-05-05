@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.droute.driverservice.Feign.client.UserServiceClient;
 import com.droute.driverservice.dto.UserEntity;
 import com.droute.driverservice.dto.request.LoginUserRequestDto;
 import com.droute.driverservice.dto.request.RegisterUserRequestDto;
@@ -16,6 +15,7 @@ import com.droute.driverservice.entity.Role;
 import com.droute.driverservice.exception.BadRequestException;
 import com.droute.driverservice.exception.EntityAlreadyExistsException;
 import com.droute.driverservice.exception.UserServiceException;
+import com.droute.driverservice.feign.client.UserServiceClient;
 import com.droute.driverservice.repository.DriverEntityRepository;
 
 import jakarta.persistence.EntityNotFoundException;

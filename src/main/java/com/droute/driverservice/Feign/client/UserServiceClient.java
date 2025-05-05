@@ -1,4 +1,4 @@
-package com.droute.driverservice.Feign.client;
+package com.droute.driverservice.feign.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;

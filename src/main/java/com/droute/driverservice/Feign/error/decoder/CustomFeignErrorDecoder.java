@@ -1,4 +1,4 @@
-package com.droute.driverservice.Feign.error.decoder;
+package com.droute.driverservice.feign.error.decoder;
 
 import java.io.IOException;
 
