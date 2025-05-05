@@ -51,7 +51,7 @@ public class DriverController {
         return ResponseBuilder.success(HttpStatus.OK, "Driver Details Found Successfully", driverDetails);
     }
 
-@PatchMapping("/reset-password")
+@PutMapping("/reset-password")
     public ResponseEntity<CommonResponseDto<String>> resetPassword(@RequestBody ResetPasswordRequestDTO requestDto) {
         var response =  driverService.resetDriverPassword(requestDto);
         return ResponseBuilder.success(HttpStatus.OK, "Password reset successfully.", response.getData());
