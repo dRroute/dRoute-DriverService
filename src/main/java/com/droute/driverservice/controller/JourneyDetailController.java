@@ -37,6 +37,8 @@ public class JourneyDetailController {
     public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> postJourneyDetails(
             @Valid @RequestBody JourneyDetailsRequestDto journeyDetail) {
 
+                logger.info("Journey details = {}", journeyDetail);
+
         JourneyDetailEntity savedJourneyDetail = journeyDetailService.postJourneyDetail(journeyDetail);
         return ResponseBuilder.success(HttpStatus.CREATED, "Journey details created successfully", savedJourneyDetail);
     }

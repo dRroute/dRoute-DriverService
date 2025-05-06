@@ -29,15 +29,19 @@ public class JourneyDetailsRequestDto {
     private LoctionDetailsRequestDto journeyDestination;
 
     @Positive(message = "Available length must be positive")
+    @NotNull(message = "Available Length cannot be null")
     private Double availableLength;
 
     @Positive(message = "Available width must be positive")
+    @NotNull(message = "Available Width cannot be null")
     private Double availableWidth;
 
     @Positive(message = "Available height must be positive")
+    @NotNull(message = "Available Height cannot be null")
     private Double availableHeight;
 
     @NotBlank(message = "Available space measurement type cannot be blank")
+    @NotNull(message = "Available Space measurement type cannot be null")
     private String availableSpaceMeasurementType;
 
     @NotNull(message = "Journey status cannot be null")
