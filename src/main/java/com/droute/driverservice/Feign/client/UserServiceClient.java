@@ -29,7 +29,7 @@ public interface UserServiceClient {
     @PostMapping("/")
     CommonResponseDto<UserEntity> registerUser(@RequestBody RegisterUserRequestDto registerRequest);
 
-    @GetMapping("/id/{userId}")
+    @GetMapping("/{userId}")
     CommonResponseDto<UserEntity> getUserById(@PathVariable("userId") Long userId);
 
     @PutMapping("/auth/reset-password")

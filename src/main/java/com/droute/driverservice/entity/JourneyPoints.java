@@ -1,6 +1,6 @@
 package com.droute.driverservice.entity;
 
-import com.google.auto.value.AutoValue.Builder;
+import lombok.Builder;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

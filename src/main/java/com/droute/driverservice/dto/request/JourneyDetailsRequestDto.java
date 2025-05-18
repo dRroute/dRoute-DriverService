@@ -28,6 +28,9 @@ public class JourneyDetailsRequestDto {
     @NotNull(message = "Journey destination cannot be null")
     private LoctionDetailsRequestDto journeyDestination;
 
+    @NotNull(message = "Journey destination cannot be null")
+    private String visitedStateDuringJourney;
+
     @Positive(message = "Available length must be positive")
     @NotNull(message = "Available Length cannot be null")
     private Double availableLength;

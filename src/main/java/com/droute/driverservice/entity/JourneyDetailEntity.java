@@ -13,10 +13,16 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Builder
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class JourneyDetailEntity {
 
     @Id
@@ -35,7 +41,7 @@ public class JourneyDetailEntity {
 //    @JsonIgnore
     private LocationDetailsEntity journeyDestination;
     
-    
+    private String visitedStateDuringJourney;
     private Double availableLength;
     private Double availableWidth;
     private Double availableHeight;
@@ -47,12 +53,6 @@ public class JourneyDetailEntity {
     private LocalDateTime expectedDepartureDateTime;
     private LocalDateTime expectedArrivalDateTime;
     
-    
-
-    public JourneyDetailEntity() {
-		super();
-	}
-
 
 	// Constructor
     public JourneyDetailEntity(Long driverId, LocationDetailsEntity journeySource, LocationDetailsEntity journeyDestination) {
@@ -62,23 +62,23 @@ public class JourneyDetailEntity {
     }
 
 
-	public JourneyDetailEntity(Long journeyId, Long driverId, LocationDetailsEntity journeySource,
-			LocationDetailsEntity journeyDestination, Double availableLength, Double availableWidth,
-			Double availableHeight, String availableSpaceMeasurementType, JourneyStatus status,
-			LocalDateTime expectedDepartureDateTime, LocalDateTime expectedArrivalDateTime) {
-		super();
-		this.journeyId = journeyId;
-		this.driverId = driverId;
-		this.journeySource = journeySource;
-		this.journeyDestination = journeyDestination;
-		this.availableLength = availableLength;
-		this.availableWidth = availableWidth;
-		this.availableHeight = availableHeight;
-		this.availableSpaceMeasurementType = availableSpaceMeasurementType;
-		this.status = status;
-		this.expectedDepartureDateTime = expectedDepartureDateTime;
-		this.expectedArrivalDateTime = expectedArrivalDateTime;
-	}
+	// public JourneyDetailEntity(Long journeyId, Long driverId, LocationDetailsEntity journeySource,
+	// 		LocationDetailsEntity journeyDestination, Double availableLength, Double availableWidth,
+	// 		Double availableHeight, String availableSpaceMeasurementType, JourneyStatus status,
+	// 		LocalDateTime expectedDepartureDateTime, LocalDateTime expectedArrivalDateTime) {
+	// 	super();
+	// 	this.journeyId = journeyId;
+	// 	this.driverId = driverId;
+	// 	this.journeySource = journeySource;
+	// 	this.journeyDestination = journeyDestination;
+	// 	this.availableLength = availableLength;
+	// 	this.availableWidth = availableWidth;
+	// 	this.availableHeight = availableHeight;
+	// 	this.availableSpaceMeasurementType = availableSpaceMeasurementType;
+	// 	this.status = status;
+	// 	this.expectedDepartureDateTime = expectedDepartureDateTime;
+	// 	this.expectedArrivalDateTime = expectedArrivalDateTime;
+	// }
 
 
 

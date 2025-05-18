@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.droute.driverservice.DriverServiceApplication;
 import com.droute.driverservice.dto.request.CourierDetailResponseDto;
 import com.droute.driverservice.dto.request.JourneyDetailsRequestDto;
 import com.droute.driverservice.dto.response.CommonResponseDto;
 import com.droute.driverservice.dto.response.ResponseBuilder;
 import com.droute.driverservice.entity.JourneyDetailEntity;
 import com.droute.driverservice.service.JourneyDetailService;
+import com.droute.driverservice.service.JourneyPointsService;
 
 import jakarta.validation.Valid;
 
@@ -32,6 +32,8 @@ public class JourneyDetailController {
 
     @Autowired
     private JourneyDetailService journeyDetailService;
+    @Autowired
+    private JourneyPointsService journeyPointsService;
 
     @PostMapping("")
     public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> postJourneyDetails(
@@ -39,9 +41,18 @@ public class JourneyDetailController {
 
                 logger.info("Journey details = {}", journeyDetail);
 
-        JourneyDetailEntity savedJourneyDetail = journeyDetailService.postJourneyDetail(journeyDetail);
+        JourneyDetailEntity savedJourneyDetail = journeyPointsService.saveJourneyAndPoints(journeyDetail);
         return ResponseBuilder.success(HttpStatus.CREATED, "Journey details created successfully", savedJourneyDetail);
     }
+    // @PostMapping("/postJourneyDetailsPoints")
+    // public ResponseEntity<CommonResponseDto<JsonNode>> postJourneyDetailsPoints(
+    //         @Valid @RequestBody JourneyDetailsRequestDto journeyDetail) {
+
+    //             logger.info("Journey details = {}", journeyDetail);
+
+    //     var savedJourneyDetail = journeyPointsService.saveJourneyAndPoints(journeyDetail);
+    //     return ResponseBuilder.success(HttpStatus.CREATED, "Journey details created successfully", savedJourneyDetail);
+    // }
 
     @GetMapping("/{journeyId}")
     public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> getJourneyDetailsById(@PathVariable Long journeyId) {
@@ -62,7 +73,7 @@ public class JourneyDetailController {
         return ResponseBuilder.success(HttpStatus.OK, "Journey details deleted successfully", null);
     }
 
-    // Get journey list by filte with courier details
+    // Get journey list by filter with courier details
 
     @PostMapping("/filter")
     public String getJourneysByCourierConditions(@RequestBody CourierDetailResponseDto courierDetails) {

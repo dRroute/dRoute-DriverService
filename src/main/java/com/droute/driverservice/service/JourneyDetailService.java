@@ -51,6 +51,7 @@ public class JourneyDetailService {
                 .driverId(journeyDetail.getDriverId())
                 .journeySource(sourceLocation)
                 .journeyDestination(destinationLocation)
+                .visitedStateDuringJourney(journeyDetail.getVisitedStateDuringJourney())
                 .availableHeight(journeyDetail.getAvailableHeight())
                 .availableLength(journeyDetail.getAvailableLength())
                 .availableWidth(journeyDetail.getAvailableWidth())

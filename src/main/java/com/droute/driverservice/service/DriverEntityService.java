@@ -111,10 +111,14 @@ public class DriverEntityService {
 	}
 
 	public CompleteDriverDetailsResponseDto getDriverById(Long driverId) {
+		System.out.println("get driver by id called.");
 		// 1. Get user data
 		DriverEntity driverEntity = driverRepository.findById(driverId)
 				.orElseThrow(() -> new EntityNotFoundException("Driver not found with id = " + driverId));
+		
+		System.out.println(driverEntity);
 		var user = userServiceClient.getUserById(driverEntity.getDriverDetailsId());
+		logger.info("user = {}", user);
 		if (user.getData() == null) {
 			throw new EntityNotFoundException("User not found with id = " + driverId);
 		}
