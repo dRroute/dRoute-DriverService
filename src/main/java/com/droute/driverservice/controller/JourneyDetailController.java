@@ -1,5 +1,7 @@
 package com.droute.driverservice.controller;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,8 @@ import com.droute.driverservice.dto.response.ResponseBuilder;
 import com.droute.driverservice.entity.JourneyDetailEntity;
 import com.droute.driverservice.service.JourneyDetailService;
 import com.droute.driverservice.service.JourneyPointsService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 import jakarta.validation.Valid;
 
@@ -44,15 +48,7 @@ public class JourneyDetailController {
         JourneyDetailEntity savedJourneyDetail = journeyPointsService.saveJourneyAndPoints(journeyDetail);
         return ResponseBuilder.success(HttpStatus.CREATED, "Journey details created successfully", savedJourneyDetail);
     }
-    // @PostMapping("/postJourneyDetailsPoints")
-    // public ResponseEntity<CommonResponseDto<JsonNode>> postJourneyDetailsPoints(
-    //         @Valid @RequestBody JourneyDetailsRequestDto journeyDetail) {
-
-    //             logger.info("Journey details = {}", journeyDetail);
-
-    //     var savedJourneyDetail = journeyPointsService.saveJourneyAndPoints(journeyDetail);
-    //     return ResponseBuilder.success(HttpStatus.CREATED, "Journey details created successfully", savedJourneyDetail);
-    // }
+   
 
     @GetMapping("/{journeyId}")
     public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> getJourneyDetailsById(@PathVariable Long journeyId) {
@@ -76,10 +72,16 @@ public class JourneyDetailController {
     // Get journey list by filter with courier details
 
     @PostMapping("/filter")
-    public String getJourneysByCourierConditions(@RequestBody CourierDetailResponseDto courierDetails) {
+    public ResponseEntity<CommonResponseDto<List<JourneyDetailEntity>>> getJourneysByCourierConditions(@RequestBody CourierDetailResponseDto courierDetails) throws JsonMappingException, JsonProcessingException {
         
         logger.info("courier details in driver = {}", courierDetails);
-        return "Success";
+        // Implement the logic to filter journeys based on courier details
+        var journeyDetails = journeyDetailService.getJourneyDetailByValidStatus();
+
+        journeyDetails = journeyDetailService.filterJourneyByState(courierDetails.getCourierSourceCoordinate(),
+                courierDetails.getCourierDestinationCoordinate(), journeyDetails);
+
+        return ResponseBuilder.success(HttpStatus.OK, "Journey details fetched successfully", journeyDetails);
     }
 
 }

@@ -1,6 +1,5 @@
 package com.droute.driverservice.service;
 
-import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -14,7 +13,6 @@ import com.droute.driverservice.dto.request.LoginUserRequestDto;
 import com.droute.driverservice.dto.request.RegisterUserRequestDto;
 import com.droute.driverservice.dto.request.RequestDriverProfileDetailsDto;
 import com.droute.driverservice.dto.request.ResetPasswordRequestDTO;
-import com.droute.driverservice.dto.request.UpdatePasswordRequestDTO;
 import com.droute.driverservice.dto.response.CommonResponseDto;
 import com.droute.driverservice.dto.response.CompleteDriverDetailsResponseDto;
 import com.droute.driverservice.entity.DriverEntity;
@@ -24,7 +22,6 @@ import com.droute.driverservice.exception.EntityAlreadyExistsException;
 import com.droute.driverservice.exception.UserServiceException;
 import com.droute.driverservice.feign.client.UserServiceClient;
 import com.droute.driverservice.repository.DriverEntityRepository;
-
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -42,7 +39,6 @@ public class DriverEntityService {
 	@Autowired
 	private UserServiceClient userServiceClient;
 
-	private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 	public DriverEntity findDriverByDriverId(Long driverId) {
 		return driverRepository.findById(driverId)

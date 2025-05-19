@@ -1,27 +1,14 @@
 package com.droute.driverservice.service;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.droute.driverservice.controller.JourneyDetailController;
 import com.droute.driverservice.dto.request.JourneyDetailsRequestDto;
 import com.droute.driverservice.entity.JourneyDetailEntity;
-import com.droute.driverservice.entity.JourneyPoints;
-import com.droute.driverservice.feign.client.GoogleMapClient;
-import com.droute.driverservice.repository.JourneyPointsRepository;
-import com.droute.driverservice.utils.LatLng;
-import com.droute.driverservice.utils.PolylineDecoder;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class JourneyPointsService {
@@ -32,16 +19,11 @@ public class JourneyPointsService {
     private static final Logger logger = LoggerFactory.getLogger(JourneyDetailController.class);
 
     @Autowired
-    private GoogleMapClient googleMapClient;
-
-    @Autowired
     private JourneyDetailService journeyDetailService;
 
     @Autowired
     private AsyncService asyncService;
 
-    @Autowired
-    private JourneyPointsRepository journeyPointsRepository;
     /*
      * public JourneyDetailEntity saveJourneyAndPoints(JourneyDetailsRequestDto
      * journeyDetail) {
@@ -172,10 +154,12 @@ public class JourneyPointsService {
 
         // Save journey points asynchronously
         // This will not block the main thread
+        logger.info("Saving journey points asynchronously for journeyId: {}", journeyDetailEntity.getJourneyId());
         asyncService.saveJourneyPointsAsync(journeyDetailEntity, journeyDetail);
 
         return journeyDetailEntity;
     }
+    
 
 
 }
