@@ -43,17 +43,22 @@ public class JourneyDetailController {
     public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> postJourneyDetails(
             @Valid @RequestBody JourneyDetailsRequestDto journeyDetail) {
 
-                logger.info("Journey details = {}", journeyDetail);
+        logger.info("Journey details = {}", journeyDetail);
 
         JourneyDetailEntity savedJourneyDetail = journeyPointsService.saveJourneyAndPoints(journeyDetail);
         return ResponseBuilder.success(HttpStatus.CREATED, "Journey details created successfully", savedJourneyDetail);
     }
-   
 
     @GetMapping("/{journeyId}")
     public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> getJourneyDetailsById(@PathVariable Long journeyId) {
         JourneyDetailEntity journeyDetail = journeyDetailService.getJourneyDetailById(journeyId);
         return ResponseBuilder.success(HttpStatus.OK, "Journey details fetched successfully", journeyDetail);
+    }
+
+    @GetMapping("/{journeyId}/exists")
+    public ResponseEntity<CommonResponseDto<Boolean>> journeyExistsById(@PathVariable Long journeyId) {
+        boolean exists = journeyDetailService.journeyExistsById(journeyId);
+        return ResponseBuilder.success(HttpStatus.OK, "Journey existence checked successfully", exists);
     }
 
     @PutMapping("")
@@ -72,8 +77,9 @@ public class JourneyDetailController {
     // Get journey list by filter with courier details
 
     @PostMapping("/filter")
-    public ResponseEntity<CommonResponseDto<List<JourneyDetailEntity>>> getJourneysByCourierConditions(@RequestBody CourierDetailResponseDto courierDetails) throws JsonMappingException, JsonProcessingException {
-        
+    public ResponseEntity<CommonResponseDto<List<JourneyDetailEntity>>> getJourneysByCourierConditions(
+            @RequestBody CourierDetailResponseDto courierDetails) throws JsonMappingException, JsonProcessingException {
+
         logger.info("courier details in driver = {}", courierDetails);
         // Implement the logic to filter journeys based on courier details
         var journeyDetails = journeyDetailService.getJourneyDetailByValidStatus();

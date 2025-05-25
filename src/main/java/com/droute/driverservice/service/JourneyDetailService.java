@@ -88,6 +88,10 @@ public class JourneyDetailService {
                 .orElseThrow(() -> new EntityNotFoundException("Journey not found with given id"));
     }
 
+    public boolean journeyExistsById(Long journeyId) {
+        return journeyDetailRepository.existsById(journeyId);
+    }
+
     public JourneyDetailEntity updateJourneyDetailById(JourneyDetailEntity journeyDetail) {
         if (getJourneyDetailById(journeyDetail.getJourneyId()) == null) {
             throw new EntityNotFoundException("Journey not found with given id");
