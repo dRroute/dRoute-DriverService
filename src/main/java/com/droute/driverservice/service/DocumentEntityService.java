@@ -22,11 +22,12 @@ public class DocumentEntityService {
 
     @Autowired
     private DriverEntityRepository driverEntityRepository;
-    
+
     public DriverEntity getDriverById(Long driverId) {
         return driverEntityRepository.findById(driverId).orElseThrow(
-            ()-> new EntityNotFoundException("Driver not found with given id = "+driverId));
+                () -> new EntityNotFoundException("Driver not found with given id = " + driverId));
     }
+
     public void deleteDocumentById(Long documentId) {
         getDocumentById(documentId);
         documentEntityRepository.deleteById(documentId);
@@ -36,25 +37,29 @@ public class DocumentEntityService {
         getDriverById(driverId);
         documentEntityRepository.deleteByDriver_DriverId(driverId);
     }
+
     public DocumentEntity getDocumentById(Long documentId) {
         return documentEntityRepository.findById(documentId).orElseThrow(
-            ()-> new EntityNotFoundException("Document not found with given id = "+documentId));
+                () -> new EntityNotFoundException("Document not found with given id = " + documentId));
     }
+
     public Set<DocumentEntity> getDocumentByDriverId(Long driverId) {
         getDriverById(driverId);
         return documentEntityRepository.findByDriver_DriverId(driverId);
     }
-    public DriverEntity postDocument(DocumentEntity document, Long driverId, String documentName) throws EntityAlreadyExistsException {
+
+    public DriverEntity postDocument(DocumentEntity document, Long driverId, String documentName)
+            throws EntityAlreadyExistsException {
         // getDocumentById(documentId);
-       var driver = getDriverById(driverId);
-         var documents = driver.getDocuments();
-            if (documents == null) {
+        var driver = getDriverById(driverId);  
+        var documents = driver.getDocuments();
+        if (documents == null) {
             documents = new HashSet<>();
         }
-        
+
         boolean documentExists = documents.stream()
-            .anyMatch(doc -> doc.getDocumentName().equals(documentName));
-        
+                .anyMatch(doc -> doc.getDocumentName().equals(documentName));
+
         if (!documentExists) {
             documents.add(document);
             driver.setDocuments(documents);
@@ -64,22 +69,30 @@ public class DocumentEntityService {
         }
 
     }
+
     public DocumentEntity updateDocumentById(DocumentEntity document) {
+        getDocumentById(document.getDocumentId());
+        // Ensure the document is associated with a driver
         return documentEntityRepository.save(document);
     }
+
     public Set<DocumentEntity> getAllDocumentsByDriverId(long driverId) {
         var driver = getDriverById(driverId);
         return driver.getDocuments();
     }
-    public Set<DocumentEntity> getDocumentByDriverIdAndDocumentName(long driverId, String documentName) {
+
+    public Set<DocumentEntity> getDocumentByDriverIdAndDocumentName(long driverId, String documentName,
+            String purpose) {
         var driver = getDriverById(driverId);
+        System.out.println("Driver: " + driver);
         var documents = driver.getDocuments();
+        System.out.println("Documents: " + documents);
         documents = documents.stream()
-            .filter(doc -> doc.getDocumentName().contains(documentName)).collect(Collectors.toSet());
-         
-        if (documents.isEmpty()) {
+                .filter(doc -> doc.getDocumentName().contains(documentName)).collect(Collectors.toSet());
+
+        if (!"check".equals(purpose) && documents.isEmpty())  {
             throw new EntityNotFoundException("Document not found with given name = " + documentName);
-            
+
         }
         return documents;
     }

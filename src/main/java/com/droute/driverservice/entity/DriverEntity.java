@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.droute.driverservice.enums.ProfileStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -17,12 +18,14 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 @Entity
 @Table(name="driver_entity")
-@Data
+@Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString(exclude = {"ratings", "documents"})
@@ -40,10 +43,9 @@ public class DriverEntity {
     private String drivingLicenceNo;
     private String vehicleName;
     private String vehicleType;
-    private String rcNumber;
 
-    
     @OneToMany(mappedBy = "ratingId", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<RatingEntity> ratings;
     
     // Account Details

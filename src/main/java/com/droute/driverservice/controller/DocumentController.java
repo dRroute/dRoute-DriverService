@@ -8,6 +8,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,7 +23,6 @@ import com.droute.driverservice.exception.EntityAlreadyExistsException;
 import com.droute.driverservice.service.DocumentEntityService;
 import com.droute.driverservice.service.DriverEntityService;
 import com.droute.driverservice.service.ImageUploadService;
-import org.springframework.web.bind.annotation.GetMapping;
 
 
 @RestController
@@ -45,7 +45,7 @@ public class DocumentController {
             @RequestParam("documentName") String documentName) throws IOException, GeneralSecurityException, EntityAlreadyExistsException {
         
         if (file.isEmpty()) {
-            ResponseBuilder.failure(HttpStatus.BAD_REQUEST, "File is empty", "DOC_400_EMPTY_FILE");
+            return ResponseBuilder.failure(HttpStatus.BAD_REQUEST, "File is empty", "DOC_400_EMPTY_FILE");
             // return new ResponseEntity<>(new ImageUploadResponseDto(400, "File is empty", null), HttpStatus.BAD_REQUEST);
         }
         
@@ -57,7 +57,7 @@ public class DocumentController {
                                          !originalFilename.endsWith(".jpeg") && 
                                          !originalFilename.endsWith(".jpg"))) {
 
-            ResponseBuilder.failure(HttpStatus.BAD_REQUEST, "Invalid file format. Only JPG, JPEG, PNG allowed.", "DOC_400_INVALID_FILE_FORMAT");
+           return  ResponseBuilder.failure(HttpStatus.BAD_REQUEST, "Invalid file format. Only JPG, JPEG, PNG allowed.", "DOC_400_INVALID_FILE_FORMAT");
             // return new ResponseEntity<>(new ImageUploadResponseDto(400, "Invalid file format. Only JPG, JPEG, PNG allowed.", null), HttpStatus.BAD_REQUEST);
         }
 
@@ -65,12 +65,38 @@ public class DocumentController {
         String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
 
         // Create a custom file name using userId & documentName
-        String customFileName = existingDriver.getDriverId() + "_" + documentName.replaceAll("\\s+", "_") ;
+        String customFileName = existingDriver.getDriverId() + "_" + documentName.replaceAll("\\s+", "-").toLowerCase() ;
         String customFileNameWithExtension = customFileName + fileExtension;
 
-        // Create a temporary file with correct extension
+         // Create a temporary file with correct extension
         File tempFile = File.createTempFile("temp", fileExtension);
         file.transferTo(tempFile);
+
+        // Check if a document with the same name already exists for the driver
+        Set<DocumentEntity> existingDocuments = documentEntityService.getDocumentByDriverIdAndDocumentName(
+                existingDriver.getDriverId(), customFileName, "check");
+        System.out.println("Existing Documents: " + existingDocuments);
+        if (!existingDocuments.isEmpty()) {
+            var document = existingDocuments.iterator().next();
+        
+            System.out.println("Document already exists for this driver: " + existingDocuments);
+            // If a document with the same name exists, update the file in Google Drive
+            ImageUploadResponseDto res = imageUploadService.updateFileInDrive(tempFile, document.getDocumentUrl(), document.getDocumentName());
+            if (res.getStatus() == 200) {
+                // Delete the temporary file after successful upload
+                tempFile.delete();
+                document.setDocumentUrl(res.getUrl());
+                documentEntityService.updateDocumentById(document);
+                return ResponseBuilder.success(HttpStatus.CREATED, res.getMessage(), res.getUrl());
+            } else if (res.getStatus() == 400) {
+                return ResponseBuilder.failure(HttpStatus.BAD_REQUEST, res.getMessage(), "DOC_400_INVALID_FILE");
+            } else {
+                return ResponseBuilder.failure(HttpStatus.INTERNAL_SERVER_ERROR, res.getMessage(), "DOC_500_UPLOAD_FAILED");
+                
+            }
+            // return new ResponseEntity<>(new ImageUploadResponseDto(400, "Document with the same name already exists for this driver.", null), HttpStatus.BAD_REQUEST);
+        }
+       
 
         // Upload to Google Drive with the custom name
         ImageUploadResponseDto res = imageUploadService.uploadImageToDrive(tempFile, customFileNameWithExtension);
@@ -81,9 +107,11 @@ public class DocumentController {
             document.setDocumentName(customFileName);
             document.setDocumentType(fileExtension);
             document.setDocumentUrl(res.getUrl());
+            document.setDriver(existingDriver);
             documentEntityService.postDocument(document , existingDriver.getDriverId(), customFileName);
             return ResponseBuilder.success(HttpStatus.CREATED, res.getMessage(), res.getUrl());
           
+         
             
         } else if(res.getStatus() == 400){
            return  ResponseBuilder.failure(HttpStatus.BAD_REQUEST, res.getMessage(), "DOC_400_INVALID_FILE");
@@ -115,7 +143,7 @@ public class DocumentController {
     @GetMapping("/getDocumentByName")
     public ResponseEntity<CommonResponseDto<Set<DocumentEntity>>> getMethodName(@RequestParam String driverId, 
         @RequestParam String documentName) {
-        var documents = documentEntityService.getDocumentByDriverIdAndDocumentName(Long.parseLong(driverId), documentName );
+        var documents = documentEntityService.getDocumentByDriverIdAndDocumentName(Long.parseLong(driverId), documentName , "get");
         return ResponseBuilder.success(HttpStatus.OK,"Document fetched successfully.", documents);
     }
 

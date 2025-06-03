@@ -12,11 +12,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-
+  
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
+@ToString 
 public class JourneyDetailsRequestDto {
 
     @NotNull(message = "Driver ID cannot be null")

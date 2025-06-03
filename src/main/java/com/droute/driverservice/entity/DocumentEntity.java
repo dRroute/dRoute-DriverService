@@ -1,5 +1,7 @@
 package com.droute.driverservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -9,15 +11,17 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 @Entity
 @Table(name="document_entity")
-@Data
+@Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
+@ToString(exclude = "driver") // Exclude driver to avoid circular reference in toString
 public class DocumentEntity {
 
     @Id
@@ -30,6 +34,7 @@ public class DocumentEntity {
     
     @ManyToOne
     @JoinColumn(name = "driver_id")  // This creates a foreign key reference to DriverEntity
+    @JsonIgnore // Prevents circular reference during serialization
     private DriverEntity driver;
     // No need to add a reference to DriverEntity here
 }

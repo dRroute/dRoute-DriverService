@@ -27,7 +27,6 @@ public class CompleteDriverDetailsResponseDto {
 	private String drivingLicenceNo;
 	private String vehicleName;
 	private String vehicleType;
-	private String rcNumber;
 
 	private String accountHolderName;
 	private String driverBankName;
