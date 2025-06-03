@@ -1,6 +1,9 @@
 package com.droute.driverservice.dto.response;
 
+
+
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -9,6 +12,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Builder
 public class CompleteDriverDetailsResponseDto {
    
     private Long userId;
@@ -31,4 +35,5 @@ public class CompleteDriverDetailsResponseDto {
 	private String driverIfsc;
 	private String driverUpiId;
 	private String aadharNumber;
+	private String profileStatus; // Enum for ACTIVE, INACTIVE, BLOCKED, etc.
 }

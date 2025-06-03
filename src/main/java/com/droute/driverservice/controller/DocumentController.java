@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 
 @RestController
-@RequestMapping("/api/file")
+@RequestMapping("/api/driver/document")
 public class DocumentController {
 
     @Autowired
@@ -39,13 +39,14 @@ public class DocumentController {
 
     //Api to upload document one at a time.
     @PostMapping(value="/uploadToGoogleDrive", consumes = "multipart/form-data")
-    public ResponseEntity<ImageUploadResponseDto> handleFileUpload(
+    public ResponseEntity<CommonResponseDto<String>> handleFileUpload(
             @RequestParam("file") MultipartFile file, 
             @RequestParam("driverId") Long driverId, 
             @RequestParam("documentName") String documentName) throws IOException, GeneralSecurityException, EntityAlreadyExistsException {
         
         if (file.isEmpty()) {
-            return new ResponseEntity<>(new ImageUploadResponseDto(400, "File is empty", null), HttpStatus.BAD_REQUEST);
+            ResponseBuilder.failure(HttpStatus.BAD_REQUEST, "File is empty", "DOC_400_EMPTY_FILE");
+            // return new ResponseEntity<>(new ImageUploadResponseDto(400, "File is empty", null), HttpStatus.BAD_REQUEST);
         }
         
         var existingDriver = driverEntityService.findDriverByDriverId(driverId);
@@ -55,7 +56,9 @@ public class DocumentController {
         if (originalFilename == null || (!originalFilename.endsWith(".png") && 
                                          !originalFilename.endsWith(".jpeg") && 
                                          !originalFilename.endsWith(".jpg"))) {
-            return new ResponseEntity<>(new ImageUploadResponseDto(400, "Invalid file format. Only JPG, JPEG, PNG allowed.", null), HttpStatus.BAD_REQUEST);
+
+            ResponseBuilder.failure(HttpStatus.BAD_REQUEST, "Invalid file format. Only JPG, JPEG, PNG allowed.", "DOC_400_INVALID_FILE_FORMAT");
+            // return new ResponseEntity<>(new ImageUploadResponseDto(400, "Invalid file format. Only JPG, JPEG, PNG allowed.", null), HttpStatus.BAD_REQUEST);
         }
 
         // Extract file extension
@@ -79,14 +82,17 @@ public class DocumentController {
             document.setDocumentType(fileExtension);
             document.setDocumentUrl(res.getUrl());
             documentEntityService.postDocument(document , existingDriver.getDriverId(), customFileName);
-            return new ResponseEntity<>(res, HttpStatus.OK);
-
+            return ResponseBuilder.success(HttpStatus.CREATED, res.getMessage(), res.getUrl());
+          
             
         } else if(res.getStatus() == 400){
-            return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+           return  ResponseBuilder.failure(HttpStatus.BAD_REQUEST, res.getMessage(), "DOC_400_INVALID_FILE");
+            // return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
         } else {
-            return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseBuilder.failure(HttpStatus.INTERNAL_SERVER_ERROR, res.getMessage(), "DOC_500_UPLOAD_FAILED");
+            // return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
 
     }
 

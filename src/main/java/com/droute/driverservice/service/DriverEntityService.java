@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import com.droute.driverservice.dto.response.CommonResponseDto;
 import com.droute.driverservice.dto.response.CompleteDriverDetailsResponseDto;
 import com.droute.driverservice.entity.DriverEntity;
 import com.droute.driverservice.entity.Role;
+import com.droute.driverservice.enums.ProfileStatus;
 import com.droute.driverservice.exception.BadRequestException;
 import com.droute.driverservice.exception.EntityAlreadyExistsException;
 import com.droute.driverservice.exception.UserServiceException;
@@ -45,17 +47,81 @@ public class DriverEntityService {
 				.orElseThrow(() -> new EntityNotFoundException("Driver not found with given id = " + driverId));
 	}
 
-	public CommonResponseDto<UserEntity> loginDriver(LoginUserRequestDto loginDetails)
-			throws BadRequestException, UserServiceException {
-		System.out.println("login driver called.");
-		return userServiceClient.loginUser(loginDetails);
+	public CompleteDriverDetailsResponseDto loginDriver(LoginUserRequestDto loginDetails)
+			throws  UserServiceException {
+		logger.info("login driver called.");
+		var user =  userServiceClient.loginUser(loginDetails);
+		if (user.getStatusCode() != 200) {
+			throw new UserServiceException("User login failed: " + user.getMessage());
+		}
+		logger.info("User logged in successfully: {}", user.getData());
+
+		// Check if the user is a driver
+		if (user.getData() != null && user.getData().getRoles().contains(Role.DRIVER)) {
+			// Fetch the driver entity using the userId
+			DriverEntity driver = driverRepository.findByDriverDetailsId(user.getData().getUserId());
+			if (driver == null) {
+				throw new EntityNotFoundException("Driver not found for userId: " + user.getData().getUserId());
+			}
+			logger.info("Driver found: {}", driver);
+
+			return CompleteDriverDetailsResponseDto.builder()
+				.userId(user.getData().getUserId())
+				.fullName(user.getData().getFullName())
+				.email(user.getData().getEmail())
+				.contactNo(user.getData().getContactNo())
+				.role(user.getData().getRoles().stream()
+						.map((Role r) -> r.toString())
+						.collect(Collectors.joining(", ")))
+				.driverId(driver.getDriverId())
+				.profileStatus(driver.getProfileStatus().toString())
+				.vehicleName(driver.getVehicleName())
+				.vehicleNumber(driver.getVehicleNumber())
+				.drivingLicenceNo(driver.getDrivingLicenceNo())
+				.rcNumber(driver.getRcNumber())
+				.accountHolderName(driver.getAccountHolderName())
+				.driverBankName(driver.getDriverBankName())
+				.driverAccountNo(driver.getDriverAccountNo())
+				.driverIfsc(driver.getDriverIfsc())
+				.driverUpiId(driver.getDriverUpiId())
+				.aadharNumber(driver.getAadharNumber())
+				// Add other fields as necessary
+				.build();
+		} else {
+			throw new BadRequestException("Given credential is not associated with Driver Account.");
+		}
+		
+
 	}
 
-	public CommonResponseDto<UserEntity> registerDriver(RegisterUserRequestDto driverDetails) {
+	public CompleteDriverDetailsResponseDto registerDriver(RegisterUserRequestDto driverDetails) {
 
 		logger.info("Driver sign-up service called");
-		return userServiceClient.registerUser(driverDetails);
+		var user =  userServiceClient.registerUser(driverDetails);
+		if (user.getStatusCode() != 200) {
+			throw new UserServiceException("User registration failed: " + user.getMessage());
+		}
+		logger.info("User registered successfully: {}", user.getData());
+		// Create a new driver entity
+		DriverEntity driver = driverRepository.save( DriverEntity.builder()
+				.profileStatus(ProfileStatus.PENDING_COMPLETION)
+				.driverDetailsId(user.getData().getUserId())
+				.build());
 
+				logger.info("Driver entity created: {}", driver);
+	
+		var driverdetails = CompleteDriverDetailsResponseDto.builder()
+				.userId(user.getData().getUserId())
+				.fullName(user.getData().getFullName())
+				.email(user.getData().getEmail())
+				.contactNo(user.getData().getContactNo())
+				.role(user.getData().getRoles().stream()
+						.map(Enum::name)
+						.collect(Collectors.joining(", ")))
+				.driverId(driver.getDriverId())
+				.profileStatus(driver.getProfileStatus().toString())
+				.build();
+		return driverdetails;
 	}
 
 	public DriverEntity getDriverByUserId(Long userId) {
@@ -148,6 +214,7 @@ public class DriverEntityService {
 		completeDetails.setDriverIfsc(driverEntity.getDriverIfsc());
 		completeDetails.setDriverUpiId(driverEntity.getDriverUpiId());
 		completeDetails.setAadharNumber(driverEntity.getAadharNumber());
+		completeDetails.setProfileStatus(driverEntity.getProfileStatus().toString());
 
 		return completeDetails;
 	}

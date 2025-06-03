@@ -14,6 +14,7 @@ import com.droute.driverservice.dto.UserEntity;
 import com.droute.driverservice.dto.request.LoginUserRequestDto;
 import com.droute.driverservice.dto.request.RegisterUserRequestDto;
 import com.droute.driverservice.dto.response.CommonResponseDto;
+import com.droute.driverservice.dto.response.CompleteDriverDetailsResponseDto;
 import com.droute.driverservice.dto.response.ResponseBuilder;
 import com.droute.driverservice.entity.Role;
 import com.droute.driverservice.exception.EntityAlreadyExistsException;
@@ -31,13 +32,16 @@ public class AuthController {
 	private DriverEntityService driveEntityService;
 
 	@PostMapping("/login")
-	public ResponseEntity<CommonResponseDto<UserEntity>> loginDriver(@RequestBody LoginUserRequestDto loginDetails) {
+	public ResponseEntity<CommonResponseDto<CompleteDriverDetailsResponseDto>> loginDriver(@RequestBody LoginUserRequestDto loginDetails) {
 		if (!loginDetails.getRole().equalsIgnoreCase("driver")) {
 			return ResponseBuilder.failure(HttpStatus.BAD_REQUEST, "Role Must be Driver."); // Return the ResponseEntity directly
 
 		}
 		var response = driveEntityService.loginDriver(loginDetails);
-		var driver = response.getData();
+
+		return ResponseBuilder.success(HttpStatus.OK, "Logged-In Successfully", response);
+
+		/* var driver = response.getData();
 
 		// This condition is added to check if the user is a driver or not
 		if (driver != null && (driver.getRoles().contains(Role.DRIVER) || driver.getRoles().contains(Role.ADMIN))) {
@@ -54,16 +58,17 @@ public class AuthController {
 		logger.info("driver = " + response.getData());
 		// When the driver is not found
 		return ResponseBuilder.failure(HttpStatus.BAD_REQUEST, "Driver Account not found."); // Return the ResponseEntity directly
-	}
+	
+		*/}
 
 	@PostMapping("/signup")
-	public ResponseEntity<CommonResponseDto<UserEntity>> createDriverAccount(
+	public ResponseEntity<CommonResponseDto<CompleteDriverDetailsResponseDto>> createDriverAccount(
 			@Valid @RequestBody RegisterUserRequestDto driverDetails) throws EntityAlreadyExistsException {
 		// Check if the role is driver or not
 		if (driverDetails.getRole().equalsIgnoreCase("driver")) {
 		
 			var response = driveEntityService.registerDriver(driverDetails);
-			return ResponseBuilder.success(HttpStatus.CREATED, response.getMessage(), response.getData());
+			return ResponseBuilder.success(HttpStatus.CREATED, "Driver registration Successfull", response);
 
 		}
 		
