@@ -47,8 +47,14 @@ public class JourneyDetailsRequestDto {
     @NotNull(message = "Available Space measurement type cannot be null")
     private String availableSpaceMeasurementType;
 
-    @NotNull(message = "Journey status cannot be null")
-    private JourneyStatus status;
+    @Positive(message = "Available weight must be positive")
+    @NotNull(message = "Available Weight cannot be null")
+    private Double availableWeight;
+
+    @NotBlank(message = "Available weight measurement type cannot be blank")
+    @NotNull(message = "Available Weight measurement type cannot be null")
+    private String availableWeightMeasurementType;
+
 
     @NotNull(message = "Expected departure date and time cannot be null")
     @Future(message = "Expected departure date and time must be in the future")

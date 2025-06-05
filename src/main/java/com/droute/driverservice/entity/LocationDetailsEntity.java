@@ -28,17 +28,10 @@ public class LocationDetailsEntity {
     private String address;
     
     private String city;
-    private String pinode;
+    private String pinCode;
+    private String state;
     private String country;
 
-////    @OneToMany(mappedBy = "journeySource")
-//    private List<JourneyDetailEntity> sourceJourneys;
-//    
-////    @OneToMany(mappedBy = "journeyDestination")
-//    private List<JourneyDetailEntity> destinationJourneys;
-
-    // Constructor
-    
     
    
 }

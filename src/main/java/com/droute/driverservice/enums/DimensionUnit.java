@@ -18,4 +18,14 @@ public enum DimensionUnit {
     public String getAbbreviation() {
         return abbreviation;
     }
+
+    // Method to get the enum value from abbreviation
+    public static DimensionUnit fromAbbreviation(String abbr) {
+        for (DimensionUnit unit : DimensionUnit.values()) {
+            if (unit.getAbbreviation().equalsIgnoreCase(abbr)) {
+                return unit;
+            }
+        }
+        throw new IllegalArgumentException("No DimensionUnit with abbreviation: " + abbr);
+    }
 }

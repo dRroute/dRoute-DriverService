@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.droute.driverservice.dto.request.CourierDetailResponseDto;
 import com.droute.driverservice.dto.request.JourneyDetailsRequestDto;
 import com.droute.driverservice.dto.response.CommonResponseDto;
+import com.droute.driverservice.dto.response.CourierDetailResponseDto;
 import com.droute.driverservice.dto.response.ResponseBuilder;
 import com.droute.driverservice.entity.JourneyDetailEntity;
 import com.droute.driverservice.service.JourneyDetailService;
@@ -61,6 +61,13 @@ public class JourneyDetailController {
         return ResponseBuilder.success(HttpStatus.OK, "Journey existence checked successfully", exists);
     }
 
+    @GetMapping("/driver/{driverId}")
+    public ResponseEntity<CommonResponseDto<List<JourneyDetailEntity>>> getAllJourneysByDriver(
+            @PathVariable Long driverId) {
+        List<JourneyDetailEntity> journeys = journeyDetailService.getJourneyDetailByDriverId(driverId);
+        return ResponseBuilder.success(HttpStatus.OK, "Journeys fetched successfully", journeys);
+    }
+
     @PutMapping("")
     public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> updateJourneyDetailsById(
             @RequestBody JourneyDetailEntity journeyDetail) {
@@ -83,6 +90,8 @@ public class JourneyDetailController {
         logger.info("courier details in driver = {}", courierDetails);
         // Implement the logic to filter journeys based on courier details
         var journeyDetails = journeyDetailService.getJourneyDetailByValidStatus();
+
+        logger.info("journey details after valid status = {}", journeyDetails);
 
         journeyDetails = journeyDetailService.filterJourneyByState(courierDetails.getCourierSourceCoordinate(),
                 courierDetails.getCourierDestinationCoordinate(), journeyDetails);

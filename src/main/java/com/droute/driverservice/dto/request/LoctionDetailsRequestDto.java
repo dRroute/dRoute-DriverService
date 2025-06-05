@@ -16,6 +16,6 @@ public class LoctionDetailsRequestDto {
     private String address;
     
     private String city;
-    private String pinode;
+    private String pinCode;
     private String country;
 }

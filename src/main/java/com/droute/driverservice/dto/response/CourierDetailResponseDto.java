@@ -1,4 +1,4 @@
-package com.droute.driverservice.dto.request;
+package com.droute.driverservice.dto.response;
 
 import java.time.LocalDateTime;
 

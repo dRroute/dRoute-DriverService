@@ -4,14 +4,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.droute.driverservice.controller.JourneyDetailController;
 import com.droute.driverservice.dto.request.JourneyDetailsRequestDto;
+import com.droute.driverservice.dto.response.JourneyDetailsResponseDto;
 import com.droute.driverservice.entity.JourneyDetailEntity;
 import com.droute.driverservice.entity.JourneyPoints;
 import com.droute.driverservice.entity.LocationDetailsEntity;
+import com.droute.driverservice.enums.DimensionUnit;
+import com.droute.driverservice.enums.JourneyStatus;
+import com.droute.driverservice.enums.WeightUnit;
 import com.droute.driverservice.feign.client.GoogleMapClient;
 import com.droute.driverservice.repository.JourneyDetailRepository;
 import com.droute.driverservice.repository.JourneyPointsRepository;
@@ -24,6 +31,8 @@ import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class JourneyDetailService {
+
+    private static final Logger logger = LoggerFactory.getLogger(JourneyDetailService.class);
 
     @Autowired
     private JourneyDetailRepository journeyDetailRepository;
@@ -53,7 +62,7 @@ public class JourneyDetailService {
                 .latitude(journeyDetail.getJourneySource().getLatitude())
                 .address(journeyDetail.getJourneySource().getAddress())
                 .city(journeyDetail.getJourneySource().getCity())
-                .pinode(journeyDetail.getJourneySource().getPinode())
+                .pinCode(journeyDetail.getJourneySource().getPinCode())
                 .country(journeyDetail.getJourneySource().getCountry())
                 .build();
 
@@ -62,7 +71,7 @@ public class JourneyDetailService {
                 .latitude(journeyDetail.getJourneyDestination().getLatitude())
                 .address(journeyDetail.getJourneyDestination().getAddress())
                 .city(journeyDetail.getJourneyDestination().getCity())
-                .pinode(journeyDetail.getJourneyDestination().getPinode())
+                .pinCode(journeyDetail.getJourneyDestination().getPinCode())
                 .country(journeyDetail.getJourneyDestination().getCountry())
                 .build();
 
@@ -75,8 +84,12 @@ public class JourneyDetailService {
                 .availableHeight(journeyDetail.getAvailableHeight())
                 .availableLength(journeyDetail.getAvailableLength())
                 .availableWidth(journeyDetail.getAvailableWidth())
-                .availableSpaceMeasurementType(journeyDetail.getAvailableSpaceMeasurementType())
-                .status(journeyDetail.getStatus())
+                .availableSpaceMeasurementType(
+                        DimensionUnit.fromAbbreviation(journeyDetail.getAvailableSpaceMeasurementType().toLowerCase()))
+                .availableWeight(journeyDetail.getAvailableWeight())
+                .availableWeightMeasurementType(
+                        WeightUnit.fromAbbreviation(journeyDetail.getAvailableWeightMeasurementType().toLowerCase()))
+                .status(JourneyStatus.NOT_STARTED)
                 .expectedDepartureDateTime(journeyDetail.getExpectedDepartureDateTime())
                 .expectedArrivalDateTime(journeyDetail.getExpectedArrivalDateTime())
                 .build();
@@ -114,7 +127,9 @@ public class JourneyDetailService {
             throw new EntityNotFoundException("Driver not found with id = " + driverId);
 
         }
+        // Fetch journey details by driver ID
         return journeyDetailRepository.findByDriverId(driverId);
+
     }
 
     public List<JourneyDetailEntity> getJourneyDetailByValidStatus() {
@@ -129,10 +144,14 @@ public class JourneyDetailService {
         // Get courier source and destination state from coordinates
         String courierSourceState = getStateFromCoordinates(courierSourceCoordinate);
         String courierDestinationState = getStateFromCoordinates(courierDestinationCoordinate);
+
+        logger.info("Courier Source State: {}, Courier Destination State: {}", courierSourceState,
+                courierDestinationState);
         if (courierSourceState == null || courierDestinationState == null) {
             throw new IllegalArgumentException("Invalid coordinates provided");
         }
 
+        logger.info("after getting state from coordinates, ");
         // Filter journey details based on the states
         // Check if the visited states contain either the source or destination state
         var filteredJourneyDetails = journeyDetails.stream()
@@ -143,14 +162,24 @@ public class JourneyDetailService {
                 })
                 .toList();
 
+        logger.info("Filtered Journey by visited states Details: {}", filteredJourneyDetails);
+
         if (filteredJourneyDetails.isEmpty()) {
             throw new EntityNotFoundException("No journeys found for the given source and destination states");
         }
 
         List<JourneyDetailEntity> result = new ArrayList<>();
         filteredJourneyDetails.forEach(journeyDetail -> {
+            logger.info("Journey Detail in side for each loop: {}", journeyDetail);
             List<JourneyPoints> jouneyPoints = journeyPointsRepository.findByJourneyId(journeyDetail.getJourneyId());
+            if (jouneyPoints.isEmpty()) {
+                logger.warn("No journey points found for journey ID: {}", journeyDetail.getJourneyId());
+                return; // Skip this journey if no points are found
+            }
+            logger.info("Journey Points: {}", jouneyPoints.size());
             int[] indexRange = getIndexRange(jouneyPoints, courierSourceState, courierDestinationState);
+
+            logger.info("Index Range: {}", Arrays.toString(indexRange));
 
             boolean flag = false;
             // calculate the distance for Courier Source Coordinate
@@ -158,9 +187,12 @@ public class JourneyDetailService {
                 JourneyPoints point = jouneyPoints.get(i);
                 // Apply haversine formula to calculate distance
                 String[] srcCoords = courierSourceCoordinate.split(",");
+                logger.info("Source Coordinates: {}", Arrays.toString(srcCoords));
                 double srcLat = Double.parseDouble(srcCoords[0]);
                 double srcLng = Double.parseDouble(srcCoords[1]);
                 double distance = haversine(srcLat, srcLng, point.getLatitude(), point.getLongitude());
+
+                logger.info("Calculated Distance from Haversine: {}", distance);
                 // Use the distance as needed (e.g., print, store, compare, etc.)
                 if (distance <= 50) {
                     flag = true;
@@ -169,13 +201,20 @@ public class JourneyDetailService {
 
             }
             if (flag) {
+
+                logger.info("Distance check passed for source state: {}", courierSourceState);
+                // calculate the distance for Courier Destination Coordinate
                 for (int i = indexRange[2]; i <= indexRange[3]; i++) {
                     JourneyPoints point = jouneyPoints.get(i);
                     // Apply haversine formula to calculate distance
                     String[] destCoords = courierDestinationCoordinate.split(",");
-                    double destLat = Double.parseDouble(destCoords[2]);
-                    double destLng = Double.parseDouble(destCoords[3]);
+
+                    logger.info("Destination Coordinates: {}", Arrays.toString(destCoords));
+                    double destLat = Double.parseDouble(destCoords[0]);
+                    double destLng = Double.parseDouble(destCoords[1]);
                     double distance = haversine(destLat, destLng, point.getLatitude(), point.getLongitude());
+
+                    logger.info("Calculated Destination Distance from Haversine: {}", distance);
                     // Use the distance as needed (e.g., print, store, compare, etc.)
                     if (distance <= 50) {
                         flag = true;
@@ -187,7 +226,7 @@ public class JourneyDetailService {
 
             if (flag) {
                 result.add(journeyDetail);
-                
+
             }
 
         });
@@ -206,40 +245,44 @@ public class JourneyDetailService {
         return R * c; // distance in kilometers
     }
 
-    private int[] getIndexRange( List<JourneyPoints> journeyPoints, String sourceStateName, String destinationStateName)  {
-        int sourceStartIndex = 0;
-        int sourceEndIndex = 0;
-        int destinationStartIndex = 0;
-        int destinationEndIndex = 0;
+    private int[] getIndexRange(List<JourneyPoints> journeyPoints, String sourceStateName,
+            String destinationStateName) {
+        int sourceStartIndex = -1;
+        int sourceEndIndex = -1;
+        int destinationStartIndex = -1;
+        int destinationEndIndex = -1;
 
-        boolean foundSourceState = false;
-        boolean foundDestinationState = false;
         for (int i = 0; i < journeyPoints.size(); i++) {
             JourneyPoints point = journeyPoints.get(i);
             String pointState = point.getStateName();
-            if (!foundSourceState && pointState.equals(sourceStateName)) {     
-                    sourceEndIndex = i;
-                    foundSourceState = true;
-    
-            } else if (foundSourceState && pointState != null) {
-                sourceEndIndex = i;
-            } else if (!foundSourceState && pointState == null){
-                sourceStartIndex = i;
+
+            // Source state range
+            if (pointState != null && pointState.equals(sourceStateName)) {
+                if (sourceStartIndex == -1) {
+                    sourceStartIndex = i;
+                }
                 sourceEndIndex = i;
             }
-            // Check for destination state
-            if (!foundDestinationState && point.getStateName().equals(destinationStateName)) {
-                destinationStartIndex = i;
-                foundDestinationState = true;
-            } else if (foundDestinationState && pointState != null) {
-                destinationEndIndex = i;
-                break;
-            } else if(!foundDestinationState && pointState == null) {
-                destinationStartIndex = i;
+
+            // Destination state range
+            if (pointState != null && pointState.equals(destinationStateName)) {
+                if (destinationStartIndex == -1) {
+                    destinationStartIndex = i;
+                }
                 destinationEndIndex = i;
             }
         }
-        return new int[] { sourceStartIndex, sourceEndIndex , destinationStartIndex, destinationEndIndex };
+
+        // Fallback if not found (to avoid -1)
+        if (sourceStartIndex == -1)
+            sourceStartIndex = sourceEndIndex = 0;
+        if (destinationStartIndex == -1)
+            destinationStartIndex = destinationEndIndex = 0;
+
+        logger.info("sourcestartIndex: {} sourceEndIndex: {} destinationStartIndex: {} destinationEndIndex: {}",
+                sourceStartIndex, sourceEndIndex, destinationStartIndex, destinationEndIndex);
+
+        return new int[] { sourceStartIndex, sourceEndIndex, destinationStartIndex, destinationEndIndex };
     }
 
     private String getStateFromCoordinates(String latLng) throws JsonMappingException, JsonProcessingException {
@@ -281,4 +324,5 @@ public class JourneyDetailService {
         }
         return stateName;
     }
+
 }

@@ -2,9 +2,12 @@ package com.droute.driverservice.entity;
 
 import java.time.LocalDateTime;
 
+import com.droute.driverservice.enums.DimensionUnit;
 import com.droute.driverservice.enums.JourneyStatus;
+import com.droute.driverservice.enums.WeightUnit;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -42,13 +45,25 @@ public class JourneyDetailEntity {
     private LocationDetailsEntity journeyDestination;
     
     private String visitedStateDuringJourney;
+
     private Double availableLength;
     private Double availableWidth;
     private Double availableHeight;
-    private String availableSpaceMeasurementType;
+
+    @Enumerated(EnumType.STRING)
+    private DimensionUnit availableSpaceMeasurementType;
+
+    private Double availableWeight;
+
+    @Enumerated(EnumType.STRING)
+    private WeightUnit availableWeightMeasurementType;
     
     @Enumerated(EnumType.STRING)
     private JourneyStatus  status;
+
+    @Column(name = "total_confirmed_packages")
+    @Builder.Default
+    private Long totalConfirmedPackages = 0L;
     
     private LocalDateTime expectedDepartureDateTime;
     private LocalDateTime expectedArrivalDateTime;

@@ -21,9 +21,8 @@ import com.droute.driverservice.enums.ProfileStatus;
 import com.droute.driverservice.exception.EntityAlreadyExistsException;
 import com.droute.driverservice.service.DriverEntityService;
 
-import feign.Response;
 import jakarta.validation.Valid;
-
+ 
 @RestController
 @RequestMapping("/api/driver")
 public class DriverController {
