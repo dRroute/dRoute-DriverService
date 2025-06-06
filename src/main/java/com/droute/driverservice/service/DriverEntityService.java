@@ -1,5 +1,6 @@
 package com.droute.driverservice.service;
 
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import com.droute.driverservice.dto.request.RegisterUserRequestDto;
 import com.droute.driverservice.dto.request.ResetPasswordRequestDTO;
 import com.droute.driverservice.dto.response.CommonResponseDto;
 import com.droute.driverservice.dto.response.CompleteDriverDetailsResponseDto;
+import com.droute.driverservice.dto.response.DocumentResponseDto;
 import com.droute.driverservice.entity.DriverEntity;
 import com.droute.driverservice.entity.Role;
 import com.droute.driverservice.enums.ProfileStatus;
@@ -22,6 +24,7 @@ import com.droute.driverservice.exception.EntityAlreadyExistsException;
 import com.droute.driverservice.exception.UserServiceException;
 import com.droute.driverservice.feign.client.UserServiceClient;
 import com.droute.driverservice.repository.DriverEntityRepository;
+import com.droute.driverservice.repository.RatingRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -39,6 +42,25 @@ public class DriverEntityService {
 	@Autowired
 	private UserServiceClient userServiceClient;
 
+	public Float getDriverAvgRating(Long driverId) {
+		logger.info("getDriverAvgRating called for driverId: {}", driverId);
+		// Fetch the driver entity
+		DriverEntity driver = findDriverByDriverId(driverId);
+
+		var ratings = driver.getRatings();
+		if (ratings == null || ratings.isEmpty()) {
+			logger.warn("No ratings found for driverId: {}", driverId);
+			return 0.0f; // Return 0 if no ratings exist
+		}
+		// Calculate the average rating
+		Double avgRating = ratings.stream()
+				.mapToDouble(rating -> rating.getStar())
+				.average()
+				.orElse(0.0); // Default to 0.0 if no ratings are present
+
+		logger.info("Average rating for driverId {} is {}", driverId, avgRating);
+		return avgRating.floatValue();
+	}
 
 	public DriverEntity findDriverByDriverId(Long driverId) {
 		return driverRepository.findById(driverId)
@@ -46,9 +68,9 @@ public class DriverEntityService {
 	}
 
 	public CompleteDriverDetailsResponseDto loginDriver(LoginUserRequestDto loginDetails)
-			throws  UserServiceException {
+			throws UserServiceException {
 		logger.info("login driver called.");
-		var user =  userServiceClient.loginUser(loginDetails);
+		var user = userServiceClient.loginUser(loginDetails);
 		if (user.getStatusCode() != 200) {
 			throw new UserServiceException("User login failed: " + user.getMessage());
 		}
@@ -64,50 +86,49 @@ public class DriverEntityService {
 			logger.info("Driver found: {}", driver);
 
 			return CompleteDriverDetailsResponseDto.builder()
-				.userId(user.getData().getUserId())
-				.fullName(user.getData().getFullName())
-				.email(user.getData().getEmail())
-				.contactNo(user.getData().getContactNo())
-				.role(user.getData().getRoles().stream()
-						.map((Role r) -> r.toString())
-						.collect(Collectors.joining(", ")))
-				.driverId(driver.getDriverId())
-				.profileStatus(driver.getProfileStatus().toString())
-				.vehicleName(driver.getVehicleName())
-				.vehicleNumber(driver.getVehicleNumber())
-				.drivingLicenceNo(driver.getDrivingLicenceNo())
-		
-				.accountHolderName(driver.getAccountHolderName())
-				.driverBankName(driver.getDriverBankName())
-				.driverAccountNo(driver.getDriverAccountNo())
-				.driverIfsc(driver.getDriverIfsc())
-				.driverUpiId(driver.getDriverUpiId())
-				.aadharNumber(driver.getAadharNumber())
-				// Add other fields as necessary
-				.build();
+					.userId(user.getData().getUserId())
+					.fullName(user.getData().getFullName())
+					.email(user.getData().getEmail())
+					.contactNo(user.getData().getContactNo())
+					.role(user.getData().getRoles().stream()
+							.map((Role r) -> r.toString())
+							.collect(Collectors.joining(", ")))
+					.driverId(driver.getDriverId())
+					.profileStatus(driver.getProfileStatus().toString())
+					.vehicleName(driver.getVehicleName())
+					.vehicleNumber(driver.getVehicleNumber())
+					.drivingLicenceNo(driver.getDrivingLicenceNo())
+
+					.accountHolderName(driver.getAccountHolderName())
+					.driverBankName(driver.getDriverBankName())
+					.driverAccountNo(driver.getDriverAccountNo())
+					.driverIfsc(driver.getDriverIfsc())
+					.driverUpiId(driver.getDriverUpiId())
+					.aadharNumber(driver.getAadharNumber())
+					// Add other fields as necessary
+					.build();
 		} else {
 			throw new BadRequestException("Given credential is not associated with Driver Account.");
 		}
-		
 
 	}
 
 	public CompleteDriverDetailsResponseDto registerDriver(RegisterUserRequestDto driverDetails) {
 
 		logger.info("Driver sign-up service called");
-		var user =  userServiceClient.registerUser(driverDetails);
+		var user = userServiceClient.registerUser(driverDetails);
 		if (user.getStatusCode() != 200) {
 			throw new UserServiceException("User registration failed: " + user.getMessage());
 		}
 		logger.info("User registered successfully: {}", user.getData());
 		// Create a new driver entity
-		DriverEntity driver = driverRepository.save( DriverEntity.builder()
+		DriverEntity driver = driverRepository.save(DriverEntity.builder()
 				.profileStatus(ProfileStatus.PENDING_COMPLETION)
 				.driverDetailsId(user.getData().getUserId())
 				.build());
 
-				logger.info("Driver entity created: {}", driver);
-	
+		logger.info("Driver entity created: {}", driver);
+
 		var driverdetails = CompleteDriverDetailsResponseDto.builder()
 				.userId(user.getData().getUserId())
 				.fullName(user.getData().getFullName())
@@ -141,7 +162,6 @@ public class DriverEntityService {
 		return driverRepository.save(driverEntity);
 	}
 
-
 	public boolean checkDriverExistByUserId(Long userId) {
 
 		return driverRepository.existsByDriverDetailsId(userId);
@@ -162,7 +182,6 @@ public class DriverEntityService {
 		driver.setDrivingLicenceNo(driverProfileDetails.getDrivingLicenceNo());
 		driver.setVehicleName(driverProfileDetails.getVehicleName());
 		driver.setVehicleType(driverProfileDetails.getVehicleType());
-		
 
 		driver.setAccountHolderName(driverProfileDetails.getAccountHolderName());
 		driver.setDriverBankName(driverProfileDetails.getDriverBankName());
@@ -172,23 +191,23 @@ public class DriverEntityService {
 		driver.setAadharNumber(driverProfileDetails.getAadharNumber());
 
 		driver.setProfileStatus(ProfileStatus.PENDING_VERIFICATION);
-	
-		driver =  driverRepository.save(driver);
+
+		driver = driverRepository.save(driver);
 
 		logger.info("Driver profile completed successfully: {}", driver);
 		return getFullDriverDetails(driver);
 
 	}
 
-	public CompleteDriverDetailsResponseDto getFullDriverDetails(DriverEntity driver){
+	public CompleteDriverDetailsResponseDto getFullDriverDetails(DriverEntity driver) {
 		logger.info("getFullDriverDetails called for driverId: {}", driver.getDriverId());
-		
+
 		// 1. Get user data
 		var user = userServiceClient.getUserById(driver.getDriverDetailsId());
 		if (user.getData() == null) {
 			throw new EntityNotFoundException("User not found with id = " + driver.getDriverDetailsId());
 		}
-		logger.info("User data retrieved: {}", user.getData());
+		// logger.info("User data retrieved: {}", user.getData());
 
 		// 2. Map to response DTO
 		CompleteDriverDetailsResponseDto completeDetails = new CompleteDriverDetailsResponseDto();
@@ -209,104 +228,120 @@ public class DriverEntityService {
 		completeDetails.setDrivingLicenceNo(driver.getDrivingLicenceNo());
 		completeDetails.setVehicleName(driver.getVehicleName());
 		completeDetails.setVehicleType(driver.getVehicleType());
-		
 
 		completeDetails.setAccountHolderName(driver.getAccountHolderName());
 		completeDetails.setDriverBankName(driver.getDriverBankName());
 		completeDetails.setDriverAccountNo(driver.getDriverAccountNo());
 		completeDetails.setDriverIfsc(driver.getDriverIfsc());
 		completeDetails.setDriverUpiId(driver.getDriverUpiId());
-		
-	
+
 		completeDetails.setAadharNumber(driver.getAadharNumber());
 		completeDetails.setProfileStatus(driver.getProfileStatus().toString());
 
+		Set<DocumentResponseDto> documentDtos = driver.getDocuments()
+				.stream()
+				.map(doc -> DocumentResponseDto.builder()
+						.documentId(doc.getDocumentId())
+						.documentName(doc.getDocumentName())
+						.documentType(doc.getDocumentType())
+						.documentUrl(doc.getDocumentUrl())
+						.build())
+				.collect(Collectors.toSet());
+
+		completeDetails.setDocuments(documentDtos);
+		// completeDetails.setDocuments(driver.getDocuments());
+
+
+		logger.info("Complete details = {}", completeDetails);
 		return completeDetails;
 	}
-	
 
 	public CompleteDriverDetailsResponseDto getDriverById(Long driverId) {
 		System.out.println("get driver by id called.");
 		// 1. Get user data
 		DriverEntity driverEntity = driverRepository.findById(driverId)
 				.orElseThrow(() -> new EntityNotFoundException("Driver not found with id = " + driverId));
-		
+
 		return getFullDriverDetails(driverEntity);
 	}
 
 	// public CompleteDriverDetailsResponseDto updateDriver(Long driverId,
-	// 		CompleteDriverDetailsResponseDto updateRequest) {
-	// 	// Fetch the driver entity
-	// 	DriverEntity driverEntity = driverRepository.findById(driverId)
-	// 			.orElseThrow(() -> new EntityNotFoundException("Driver not found with id = " + driverId));
+	// CompleteDriverDetailsResponseDto updateRequest) {
+	// // Fetch the driver entity
+	// DriverEntity driverEntity = driverRepository.findById(driverId)
+	// .orElseThrow(() -> new EntityNotFoundException("Driver not found with id = "
+	// + driverId));
 
-	// 	// Fetch the user entity linked to the driver
-	// 	var userResponse = userServiceClient.getUserById(driverEntity.getDriverDetailsId());
-	// 	if (userResponse.getData() == null) {
-	// 		throw new EntityNotFoundException("User not found with id = " + driverId);
-	// 	}
-	// 	UserEntity userEntity = userResponse.getData();
+	// // Fetch the user entity linked to the driver
+	// var userResponse =
+	// userServiceClient.getUserById(driverEntity.getDriverDetailsId());
+	// if (userResponse.getData() == null) {
+	// throw new EntityNotFoundException("User not found with id = " + driverId);
+	// }
+	// UserEntity userEntity = userResponse.getData();
 
-	// 	// Update user entity fields
-	// 	userEntity.setFullName(updateRequest.getFullName());
-	// 	userEntity.setEmail(updateRequest.getEmail());
-	// 	userEntity.setContactNo(updateRequest.getContactNo());
+	// // Update user entity fields
+	// userEntity.setFullName(updateRequest.getFullName());
+	// userEntity.setEmail(updateRequest.getEmail());
+	// userEntity.setContactNo(updateRequest.getContactNo());
 
-	// 	// Save the updated user entity
-	// 	userServiceClient.updateUser(userEntity); // Make an API call to update the user
+	// // Save the updated user entity
+	// userServiceClient.updateUser(userEntity); // Make an API call to update the
+	// user
 
-	// 	// Update driver entity fields
-	// 	driverEntity.setVehicleNumber(updateRequest.getVehicleNumber());
-	// 	driverEntity.setDrivingLicenceNo(updateRequest.getDrivingLicenceNo());
-	// 	driverEntity.setVehicleName(updateRequest.getVehicleName());
-	// 	driverEntity.setVehicleType(updateRequest.getVehicleType());
-	// 	driverEntity.setRcNumber(updateRequest.getRcNumber());
-	// 	driverEntity.setAccountHolderName(updateRequest.getAccountHolderName());
-	// 	driverEntity.setDriverBankName(updateRequest.getDriverBankName());
-	// 	driverEntity.setDriverAccountNo(updateRequest.getDriverAccountNo());
-	// 	driverEntity.setDriverIfsc(updateRequest.getDriverIfsc());
-	// 	driverEntity.setDriverUpiId(updateRequest.getDriverUpiId());
-	// 	driverEntity.setAadharNumber(updateRequest.getAadharNumber());
+	// // Update driver entity fields
+	// driverEntity.setVehicleNumber(updateRequest.getVehicleNumber());
+	// driverEntity.setDrivingLicenceNo(updateRequest.getDrivingLicenceNo());
+	// driverEntity.setVehicleName(updateRequest.getVehicleName());
+	// driverEntity.setVehicleType(updateRequest.getVehicleType());
+	// driverEntity.setRcNumber(updateRequest.getRcNumber());
+	// driverEntity.setAccountHolderName(updateRequest.getAccountHolderName());
+	// driverEntity.setDriverBankName(updateRequest.getDriverBankName());
+	// driverEntity.setDriverAccountNo(updateRequest.getDriverAccountNo());
+	// driverEntity.setDriverIfsc(updateRequest.getDriverIfsc());
+	// driverEntity.setDriverUpiId(updateRequest.getDriverUpiId());
+	// driverEntity.setAadharNumber(updateRequest.getAadharNumber());
 
-	// 	// Save the updated driver entity
-	// 	driverRepository.save(driverEntity);
+	// // Save the updated driver entity
+	// driverRepository.save(driverEntity);
 
-	// 	// Prepare response DTO with updated information
-	// 	CompleteDriverDetailsResponseDto completeDetails = new CompleteDriverDetailsResponseDto();
-	// 	completeDetails.setUserId(userEntity.getUserId());
-	// 	completeDetails.setDriverId(driverEntity.getDriverId());
-	// 	completeDetails.setFullName(userEntity.getFullName());
-	// 	completeDetails.setEmail(userEntity.getEmail());
-	// 	completeDetails.setContactNo(userEntity.getContactNo());
+	// // Prepare response DTO with updated information
+	// CompleteDriverDetailsResponseDto completeDetails = new
+	// CompleteDriverDetailsResponseDto();
+	// completeDetails.setUserId(userEntity.getUserId());
+	// completeDetails.setDriverId(driverEntity.getDriverId());
+	// completeDetails.setFullName(userEntity.getFullName());
+	// completeDetails.setEmail(userEntity.getEmail());
+	// completeDetails.setContactNo(userEntity.getContactNo());
 
-	// 	String role = userEntity.getRoles()
-	// 			.stream()
-	// 			.map(Enum::name)
-	// 			.collect(Collectors.joining(", "));
-	// 	completeDetails.setRole(role);
+	// String role = userEntity.getRoles()
+	// .stream()
+	// .map(Enum::name)
+	// .collect(Collectors.joining(", "));
+	// completeDetails.setRole(role);
 
-	// 	completeDetails.setVehicleNumber(driverEntity.getVehicleNumber());
-	// 	completeDetails.setDrivingLicenceNo(driverEntity.getDrivingLicenceNo());
-	// 	completeDetails.setVehicleName(driverEntity.getVehicleName());
-	// 	completeDetails.setVehicleType(driverEntity.getVehicleType());
-	// 	completeDetails.setRcNumber(driverEntity.getRcNumber());
+	// completeDetails.setVehicleNumber(driverEntity.getVehicleNumber());
+	// completeDetails.setDrivingLicenceNo(driverEntity.getDrivingLicenceNo());
+	// completeDetails.setVehicleName(driverEntity.getVehicleName());
+	// completeDetails.setVehicleType(driverEntity.getVehicleType());
+	// completeDetails.setRcNumber(driverEntity.getRcNumber());
 
-	// 	completeDetails.setAccountHolderName(driverEntity.getAccountHolderName());
-	// 	completeDetails.setDriverBankName(driverEntity.getDriverBankName());
-	// 	completeDetails.setDriverAccountNo(driverEntity.getDriverAccountNo());
-	// 	completeDetails.setDriverIfsc(driverEntity.getDriverIfsc());
-	// 	completeDetails.setDriverUpiId(driverEntity.getDriverUpiId());
-	// 	completeDetails.setAadharNumber(driverEntity.getAadharNumber());
+	// completeDetails.setAccountHolderName(driverEntity.getAccountHolderName());
+	// completeDetails.setDriverBankName(driverEntity.getDriverBankName());
+	// completeDetails.setDriverAccountNo(driverEntity.getDriverAccountNo());
+	// completeDetails.setDriverIfsc(driverEntity.getDriverIfsc());
+	// completeDetails.setDriverUpiId(driverEntity.getDriverUpiId());
+	// completeDetails.setAadharNumber(driverEntity.getAadharNumber());
 
-	// 	return completeDetails;
+	// return completeDetails;
 	// }
 
 	public CommonResponseDto<String> resetDriverPassword(ResetPasswordRequestDTO requestDto) {
-        var userResponse = userServiceClient.resetUserPassword(requestDto);
-        if (userResponse.getStatusCode() != 200) {
-            throw new EntityNotFoundException("User not found with email = " + requestDto.getEmail());
-        }        
-        return userResponse;
-    }
-	
+		var userResponse = userServiceClient.resetUserPassword(requestDto);
+		if (userResponse.getStatusCode() != 200) {
+			throw new EntityNotFoundException("User not found with email = " + requestDto.getEmail());
+		}
+		return userResponse;
+	}
+
 }

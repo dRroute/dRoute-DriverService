@@ -10,9 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.droute.driverservice.controller.JourneyDetailController;
 import com.droute.driverservice.dto.request.JourneyDetailsRequestDto;
-import com.droute.driverservice.dto.response.JourneyDetailsResponseDto;
+import com.droute.driverservice.dto.response.FilteredJourneyDetailsResponseDto;
 import com.droute.driverservice.entity.JourneyDetailEntity;
 import com.droute.driverservice.entity.JourneyPoints;
 import com.droute.driverservice.entity.LocationDetailsEntity;
@@ -20,6 +19,7 @@ import com.droute.driverservice.enums.DimensionUnit;
 import com.droute.driverservice.enums.JourneyStatus;
 import com.droute.driverservice.enums.WeightUnit;
 import com.droute.driverservice.feign.client.GoogleMapClient;
+import com.droute.driverservice.repository.DriverEntityRepository;
 import com.droute.driverservice.repository.JourneyDetailRepository;
 import com.droute.driverservice.repository.JourneyPointsRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -36,6 +36,9 @@ public class JourneyDetailService {
 
     @Autowired
     private JourneyDetailRepository journeyDetailRepository;
+
+    @Autowired
+    private DriverEntityRepository driverEntityRepository;
 
     @Autowired
     private DriverEntityService driverEntityService;
@@ -138,20 +141,17 @@ public class JourneyDetailService {
         return journeyDetailRepository.findByStatusNotIn(excludedStatuses);
     }
 
-    public List<JourneyDetailEntity> filterJourneyByState(String courierSourceCoordinate,
+    public  List<FilteredJourneyDetailsResponseDto> filterJourneyByState(String courierSourceCoordinate,
             String courierDestinationCoordinate, List<JourneyDetailEntity> journeyDetails)
             throws JsonMappingException, JsonProcessingException {
         // Get courier source and destination state from coordinates
         String courierSourceState = getStateFromCoordinates(courierSourceCoordinate);
         String courierDestinationState = getStateFromCoordinates(courierDestinationCoordinate);
 
-        logger.info("Courier Source State: {}, Courier Destination State: {}", courierSourceState,
-                courierDestinationState);
         if (courierSourceState == null || courierDestinationState == null) {
             throw new IllegalArgumentException("Invalid coordinates provided");
         }
 
-        logger.info("after getting state from coordinates, ");
         // Filter journey details based on the states
         // Check if the visited states contain either the source or destination state
         var filteredJourneyDetails = journeyDetails.stream()
@@ -162,24 +162,23 @@ public class JourneyDetailService {
                 })
                 .toList();
 
-        logger.info("Filtered Journey by visited states Details: {}", filteredJourneyDetails);
-
         if (filteredJourneyDetails.isEmpty()) {
             throw new EntityNotFoundException("No journeys found for the given source and destination states");
         }
 
-        List<JourneyDetailEntity> result = new ArrayList<>();
+        List<FilteredJourneyDetailsResponseDto> result = new ArrayList<>();
+
+
         filteredJourneyDetails.forEach(journeyDetail -> {
-            logger.info("Journey Detail in side for each loop: {}", journeyDetail);
+
             List<JourneyPoints> jouneyPoints = journeyPointsRepository.findByJourneyId(journeyDetail.getJourneyId());
             if (jouneyPoints.isEmpty()) {
-                logger.warn("No journey points found for journey ID: {}", journeyDetail.getJourneyId());
+
                 return; // Skip this journey if no points are found
             }
-            logger.info("Journey Points: {}", jouneyPoints.size());
+
             int[] indexRange = getIndexRange(jouneyPoints, courierSourceState, courierDestinationState);
 
-            logger.info("Index Range: {}", Arrays.toString(indexRange));
 
             boolean flag = false;
             // calculate the distance for Courier Source Coordinate
@@ -187,12 +186,11 @@ public class JourneyDetailService {
                 JourneyPoints point = jouneyPoints.get(i);
                 // Apply haversine formula to calculate distance
                 String[] srcCoords = courierSourceCoordinate.split(",");
-                logger.info("Source Coordinates: {}", Arrays.toString(srcCoords));
+
                 double srcLat = Double.parseDouble(srcCoords[0]);
                 double srcLng = Double.parseDouble(srcCoords[1]);
                 double distance = haversine(srcLat, srcLng, point.getLatitude(), point.getLongitude());
 
-                logger.info("Calculated Distance from Haversine: {}", distance);
                 // Use the distance as needed (e.g., print, store, compare, etc.)
                 if (distance <= 50) {
                     flag = true;
@@ -202,19 +200,16 @@ public class JourneyDetailService {
             }
             if (flag) {
 
-                logger.info("Distance check passed for source state: {}", courierSourceState);
                 // calculate the distance for Courier Destination Coordinate
                 for (int i = indexRange[2]; i <= indexRange[3]; i++) {
                     JourneyPoints point = jouneyPoints.get(i);
                     // Apply haversine formula to calculate distance
                     String[] destCoords = courierDestinationCoordinate.split(",");
 
-                    logger.info("Destination Coordinates: {}", Arrays.toString(destCoords));
                     double destLat = Double.parseDouble(destCoords[0]);
                     double destLng = Double.parseDouble(destCoords[1]);
                     double distance = haversine(destLat, destLng, point.getLatitude(), point.getLongitude());
 
-                    logger.info("Calculated Destination Distance from Haversine: {}", distance);
                     // Use the distance as needed (e.g., print, store, compare, etc.)
                     if (distance <= 50) {
                         flag = true;
@@ -225,7 +220,15 @@ public class JourneyDetailService {
             }
 
             if (flag) {
-                result.add(journeyDetail);
+
+                var driver = driverEntityService.getDriverById(journeyDetail.getDriverId());
+                // logger.info("Driver Details: {}", driver);
+                var filteredJourneyDetail = new FilteredJourneyDetailsResponseDto();
+                filteredJourneyDetail.setDriver(driver);
+                filteredJourneyDetail.setJourney(journeyDetail);
+                filteredJourneyDetail.setAverageDriverRating(driverEntityService.getDriverAvgRating(driver.getDriverId()));
+
+                result.add(filteredJourneyDetail);
 
             }
 

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.droute.driverservice.dto.request.JourneyDetailsRequestDto;
 import com.droute.driverservice.dto.response.CommonResponseDto;
 import com.droute.driverservice.dto.response.CourierDetailResponseDto;
+import com.droute.driverservice.dto.response.FilteredJourneyDetailsResponseDto;
 import com.droute.driverservice.dto.response.ResponseBuilder;
 import com.droute.driverservice.entity.JourneyDetailEntity;
 import com.droute.driverservice.service.JourneyDetailService;
@@ -84,7 +85,7 @@ public class JourneyDetailController {
     // Get journey list by filter with courier details
 
     @PostMapping("/filter")
-    public ResponseEntity<CommonResponseDto<List<JourneyDetailEntity>>> getJourneysByCourierConditions(
+    public ResponseEntity<CommonResponseDto<List<FilteredJourneyDetailsResponseDto>>> getJourneysByCourierConditions(
             @RequestBody CourierDetailResponseDto courierDetails) throws JsonMappingException, JsonProcessingException {
 
         logger.info("courier details in driver = {}", courierDetails);
@@ -93,10 +94,13 @@ public class JourneyDetailController {
 
         logger.info("journey details after valid status = {}", journeyDetails);
 
-        journeyDetails = journeyDetailService.filterJourneyByState(courierDetails.getCourierSourceCoordinate(),
+        var result = journeyDetailService.filterJourneyByState(courierDetails.getCourierSourceCoordinate(),
                 courierDetails.getCourierDestinationCoordinate(), journeyDetails);
 
-        return ResponseBuilder.success(HttpStatus.OK, "Journey details fetched successfully", journeyDetails);
+        var response =  ResponseBuilder.success(HttpStatus.OK, "Journey details fetched successfully", result);
+        logger.info("Response = {}", result);
+        return response;
+        
     }
-
+    
 }

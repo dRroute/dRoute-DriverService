@@ -2,6 +2,10 @@ package com.droute.driverservice.dto.response;
 
 
 
+import java.util.Set;
+
+import com.droute.driverservice.entity.DocumentEntity;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,4 +39,6 @@ public class CompleteDriverDetailsResponseDto {
 	private String driverUpiId;
 	private String aadharNumber;
 	private String profileStatus; // Enum for ACTIVE, INACTIVE, BLOCKED, etc.
+
+	private Set<DocumentResponseDto> documents; 
 }
