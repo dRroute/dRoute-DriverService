@@ -17,7 +17,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -59,7 +58,7 @@ public class DriverEntity {
     @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<DocumentEntity> documents;
 
-    @Enumerated(EnumType.STRING )
-    private ProfileStatus profileStatus; // Enum for ACTIVE, INACTIVE, BLOCKED, etc.
+    // @Enumerated(EnumType.STRING )
+    // private ProfileStatus profileStatus; // Enum for ACTIVE, INACTIVE, BLOCKED, etc.
     
 }

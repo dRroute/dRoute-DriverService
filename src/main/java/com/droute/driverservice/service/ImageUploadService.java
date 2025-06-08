@@ -83,6 +83,56 @@ public class ImageUploadService {
     }
    
    
+
+    public ImageUploadResponseDto uploadCustomImageToDrive(File file, String customFileName)
+            throws GeneralSecurityException, IOException {
+        ImageUploadResponseDto res = new ImageUploadResponseDto();
+
+        try {
+            // ✅ Validate file type before processing
+            String fileName = file.getName().toLowerCase();
+            if (!fileName.endsWith(".jpg") && !fileName.endsWith(".jpeg") && !fileName.endsWith(".png")) {
+                res.setStatus(400);
+                res.setMessage("Only JPG, JPEG, and PNG files are allowed.");
+                return res;
+            }
+
+            // ✅ Determine MIME type dynamically
+            String mimeType = Files.probeContentType(file.toPath());
+            if (mimeType == null)
+                mimeType = "application/octet-stream"; // Fallback in case of null
+
+            Drive drive = createDriveService();
+
+            // ✅ Set custom file name
+            com.google.api.services.drive.model.File fileMetaData = new com.google.api.services.drive.model.File();
+            fileMetaData.setName(customFileName); // Assign custom file name
+            fileMetaData.setParents(Collections.singletonList(FOLDER_ID));
+
+            FileContent mediaContent = new FileContent(mimeType, file);
+            com.google.api.services.drive.model.File uploadedFile = drive.files()
+                    .create(fileMetaData, mediaContent)
+                    .setFields("id")
+                    .execute();
+
+            String imageUrl = "https://drive.google.com/uc?export=view&id=" + uploadedFile.getId();
+            System.out.println("IMAGE URL: " + imageUrl);
+
+            // ✅ Delete file after successful upload
+            file.delete();
+
+            res.setStatus(200);
+            res.setMessage("Image Successfully Uploaded To Google Drive");
+            res.setUrl(imageUrl);
+        } catch (Exception e) {
+            System.out.println("Upload Failed: " + e.getMessage());
+            res.setStatus(500);
+            res.setMessage("Upload failed: " + e.getMessage());
+        }
+        return res;
+    }
+   
+   
     // If i have a url then i want to update the file from Google Drive
     public ImageUploadResponseDto updateFileInDrive(File file, String url, String customFileName)
             throws GeneralSecurityException, IOException {

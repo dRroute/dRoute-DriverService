@@ -19,7 +19,6 @@ import com.droute.driverservice.dto.response.CommonResponseDto;
 // @FeignClient(name = "droute-user-service", path = "/api/user")
 public interface UserServiceClient {
 
-   
     @PostMapping("/auth/login")
     CommonResponseDto<UserEntity> loginUser(@RequestBody LoginUserRequestDto loginRequest);
 
@@ -35,5 +34,7 @@ public interface UserServiceClient {
     @PutMapping("/auth/reset-password")
     CommonResponseDto<String> resetUserPassword(@RequestBody ResetPasswordRequestDTO requestDTO);
 
-   
+    @PutMapping("/{userId}")
+    CommonResponseDto<UserEntity> updateUserDetails(@RequestBody UserEntity user, @PathVariable Long userId);
+
 }

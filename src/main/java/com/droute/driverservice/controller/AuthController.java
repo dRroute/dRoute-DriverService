@@ -40,27 +40,8 @@ public class AuthController {
 		var response = driveEntityService.loginDriver(loginDetails);
 
 		return ResponseBuilder.success(HttpStatus.OK, "Logged-In Successfully", response);
-
-		/* var driver = response.getData();
-
-		// This condition is added to check if the user is a driver or not
-		if (driver != null && (driver.getRoles().contains(Role.DRIVER) || driver.getRoles().contains(Role.ADMIN))) {
-			return ResponseBuilder.success(HttpStatus.OK, "Logged in successfully.", driver);
-
-		}
-		// If the user is not a driver then return the response with message
-		else if (driver != null
-				&& !(driver.getRoles().contains(Role.DRIVER) || driver.getRoles().contains(Role.ADMIN))) {
-			
-
-			return ResponseBuilder.failure(HttpStatus.BAD_REQUEST, "Given credential is not associated with Driver Account.");
-		}
-		logger.info("driver = " + response.getData());
-		// When the driver is not found
-		return ResponseBuilder.failure(HttpStatus.BAD_REQUEST, "Driver Account not found."); // Return the ResponseEntity directly
-	
-		*/}
-
+	}
+		
 	@PostMapping("/signup")
 	public ResponseEntity<CommonResponseDto<CompleteDriverDetailsResponseDto>> createDriverAccount(
 			@Valid @RequestBody RegisterUserRequestDto driverDetails) throws EntityAlreadyExistsException {

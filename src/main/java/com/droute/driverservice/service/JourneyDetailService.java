@@ -141,7 +141,7 @@ public class JourneyDetailService {
         return journeyDetailRepository.findByStatusNotIn(excludedStatuses);
     }
 
-    public  List<FilteredJourneyDetailsResponseDto> filterJourneyByState(String courierSourceCoordinate,
+    public List<FilteredJourneyDetailsResponseDto> filterJourneyByState(String courierSourceCoordinate,
             String courierDestinationCoordinate, List<JourneyDetailEntity> journeyDetails)
             throws JsonMappingException, JsonProcessingException {
         // Get courier source and destination state from coordinates
@@ -168,7 +168,6 @@ public class JourneyDetailService {
 
         List<FilteredJourneyDetailsResponseDto> result = new ArrayList<>();
 
-
         filteredJourneyDetails.forEach(journeyDetail -> {
 
             List<JourneyPoints> jouneyPoints = journeyPointsRepository.findByJourneyId(journeyDetail.getJourneyId());
@@ -178,7 +177,6 @@ public class JourneyDetailService {
             }
 
             int[] indexRange = getIndexRange(jouneyPoints, courierSourceState, courierDestinationState);
-
 
             boolean flag = false;
             // calculate the distance for Courier Source Coordinate
@@ -226,7 +224,8 @@ public class JourneyDetailService {
                 var filteredJourneyDetail = new FilteredJourneyDetailsResponseDto();
                 filteredJourneyDetail.setDriver(driver);
                 filteredJourneyDetail.setJourney(journeyDetail);
-                filteredJourneyDetail.setAverageDriverRating(driverEntityService.getDriverAvgRating(driver.getDriverId()));
+                filteredJourneyDetail
+                        .setAverageDriverRating(driverEntityService.getDriverAvgRating(driver.getDriverId()));
 
                 result.add(filteredJourneyDetail);
 
@@ -235,6 +234,19 @@ public class JourneyDetailService {
         });
 
         return result;
+    }
+
+    public FilteredJourneyDetailsResponseDto getDetailedJourney(Long journeyId) {
+
+        var journeyDetail = getJourneyDetailById(journeyId);
+        var driver = driverEntityService.getDriverById(journeyDetail.getDriverId());
+        // logger.info("Driver Details: {}", driver);
+        var filteredJourneyDetail = new FilteredJourneyDetailsResponseDto();
+        filteredJourneyDetail.setDriver(driver);
+        filteredJourneyDetail.setJourney(journeyDetail);
+        filteredJourneyDetail.setAverageDriverRating(driverEntityService.getDriverAvgRating(driver.getDriverId()));
+        return filteredJourneyDetail;
+
     }
 
     private double haversine(double lat1, double lon1, double lat2, double lon2) {

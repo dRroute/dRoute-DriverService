@@ -124,6 +124,65 @@ public class DocumentController {
 
     }
 
+    //Api to upload document and get URL.
+    @PostMapping(value="/custom/uploadToGoogleDrive", consumes = "multipart/form-data")
+    public ResponseEntity<CommonResponseDto<DocumentEntity>> handleCustomFileUpload(
+            @RequestParam("file") MultipartFile file, 
+            @RequestParam("entityId") Long entityId, 
+            @RequestParam("entityName") String entityName, 
+            @RequestParam("documentName") String documentName) throws IOException, GeneralSecurityException, EntityAlreadyExistsException {
+        
+        if (file.isEmpty()) {
+            return ResponseBuilder.failure(HttpStatus.BAD_REQUEST, "File is empty");
+            // return new ResponseEntity<>(new ImageUploadResponseDto(400, "File is empty", null), HttpStatus.BAD_REQUEST);
+        }
+ 
+        
+        // Validate file extension
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || (!originalFilename.endsWith(".png") && 
+                                         !originalFilename.endsWith(".jpeg") && 
+                                         !originalFilename.endsWith(".jpg"))) {
+
+           return  ResponseBuilder.failure(HttpStatus.BAD_REQUEST, "Invalid file format. Only JPG, JPEG, PNG allowed.");
+            // return new ResponseEntity<>(new ImageUploadResponseDto(400, "Invalid file format. Only JPG, JPEG, PNG allowed.", null), HttpStatus.BAD_REQUEST);
+        }
+
+        // Extract file extension
+        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+
+        // Create a custom file name using entityId & entityName
+        String customFileName = entityId+ "_" + entityName + "_" + documentName.replaceAll("\\s+", "-").toLowerCase() ;
+        String customFileNameWithExtension = customFileName + fileExtension;
+
+         // Create a temporary file with correct extension
+        File tempFile = File.createTempFile("temp", fileExtension);
+        file.transferTo(tempFile);
+
+        // Upload to Google Drive with the custom name
+        ImageUploadResponseDto res = imageUploadService.uploadCustomImageToDrive(tempFile, customFileNameWithExtension);
+        if (res.getStatus() == 200) {
+            // Delete the temporary file after successful upload
+            tempFile.delete();
+            var document = new DocumentEntity();
+            document.setDocumentName(customFileName);
+            document.setDocumentType(fileExtension);
+            document.setDocumentUrl(res.getUrl());
+            return ResponseBuilder.success(HttpStatus.CREATED, res.getMessage(), document);
+          
+         
+            
+        } else if(res.getStatus() == 400){
+           return  ResponseBuilder.failure(HttpStatus.BAD_REQUEST, res.getMessage());
+            // return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+        } else {
+            return ResponseBuilder.failure(HttpStatus.INTERNAL_SERVER_ERROR, res.getMessage());
+            // return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+
+    }
+
     // Get all documents by driverId
     @GetMapping("/getAllDocumentsByDriverId")
     public ResponseEntity<CommonResponseDto<Set<DocumentEntity>>> getAllDocumentsByDriverId(@RequestParam String driverId) {

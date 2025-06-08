@@ -4,8 +4,6 @@ package com.droute.driverservice.dto.response;
 
 import java.util.Set;
 
-import com.droute.driverservice.entity.DocumentEntity;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

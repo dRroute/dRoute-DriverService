@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DocumentResponseDto {
-    private Long documentId;
+    private Long documentId;  
     private String documentName;
     private String documentType;
     private String documentUrl;
