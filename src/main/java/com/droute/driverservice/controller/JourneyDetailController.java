@@ -1,5 +1,9 @@
 package com.droute.driverservice.controller;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,45 +16,97 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.droute.driverservice.dto.CommonResponseDto;
+import com.droute.driverservice.dto.request.JourneyDetailsRequestDto;
+import com.droute.driverservice.dto.response.CommonResponseDto;
+import com.droute.driverservice.dto.response.CourierDetailResponseDto;
+import com.droute.driverservice.dto.response.FilteredJourneyDetailsResponseDto;
+import com.droute.driverservice.dto.response.ResponseBuilder;
 import com.droute.driverservice.entity.JourneyDetailEntity;
 import com.droute.driverservice.service.JourneyDetailService;
+import com.droute.driverservice.service.JourneyPointsService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
+import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/journey-details")
+@RequestMapping("/api/driver/journey-details")
 public class JourneyDetailController {
+
+    private static final Logger logger = LoggerFactory.getLogger(JourneyDetailController.class);
 
     @Autowired
     private JourneyDetailService journeyDetailService;
-  
+    @Autowired
+    private JourneyPointsService journeyPointsService;
 
-    @PostMapping
-    public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> postJourneyDetails(@RequestBody JourneyDetailEntity journeyDetail) {
-    	
-        JourneyDetailEntity savedJourneyDetail = journeyDetailService.postJourneyDetail(journeyDetail);
-        CommonResponseDto<JourneyDetailEntity> crd = new CommonResponseDto<>("Journey details created successfully", savedJourneyDetail);
-        return new ResponseEntity<>(crd, HttpStatus.CREATED);
+    @PostMapping("")
+    public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> postJourneyDetails(
+            @Valid @RequestBody JourneyDetailsRequestDto journeyDetail) {
+
+        logger.info("Journey details = {}", journeyDetail);
+
+        JourneyDetailEntity savedJourneyDetail = journeyPointsService.saveJourneyAndPoints(journeyDetail);
+        return ResponseBuilder.success(HttpStatus.CREATED, "Journey details created successfully", savedJourneyDetail);
     }
 
     @GetMapping("/{journeyId}")
     public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> getJourneyDetailsById(@PathVariable Long journeyId) {
         JourneyDetailEntity journeyDetail = journeyDetailService.getJourneyDetailById(journeyId);
-        CommonResponseDto<JourneyDetailEntity> crd = new CommonResponseDto<>("Journey details fetched successfully", journeyDetail);
-        return new ResponseEntity<>(crd, HttpStatus.OK);
+        return ResponseBuilder.success(HttpStatus.OK, "Journey details fetched successfully", journeyDetail);
     }
 
-    @PutMapping("/{journeyId}")
-    public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> updateJourneyDetailsById(@PathVariable Long journeyId, @RequestBody JourneyDetailEntity journeyDetail) {
-        journeyDetail.setJourneyId(journeyId);  // Ensure the correct ID is set for updating
+    @GetMapping("/{journeyId}/driver-detail")
+    public ResponseEntity<CommonResponseDto<FilteredJourneyDetailsResponseDto >> getJourneyDetailsWithDriverDetailsByJourneyId(@PathVariable Long journeyId) {
+        FilteredJourneyDetailsResponseDto  journeyDetail = journeyDetailService.getDetailedJourney(journeyId);
+        return ResponseBuilder.success(HttpStatus.OK, "Journey details fetched successfully", journeyDetail);
+    }
+
+    @GetMapping("/{journeyId}/exists")
+    public ResponseEntity<CommonResponseDto<Boolean>> journeyExistsById(@PathVariable Long journeyId) {
+        boolean exists = journeyDetailService.journeyExistsById(journeyId);
+        return ResponseBuilder.success(HttpStatus.OK, "Journey existence checked successfully", exists);
+    }
+
+    @GetMapping("/driver/{driverId}")
+    public ResponseEntity<CommonResponseDto<List<JourneyDetailEntity>>> getAllJourneysByDriver(
+            @PathVariable Long driverId) {
+        List<JourneyDetailEntity> journeys = journeyDetailService.getJourneyDetailByDriverId(driverId);
+        return ResponseBuilder.success(HttpStatus.OK, "Journeys fetched successfully", journeys);
+    }
+
+    @PutMapping("")
+    public ResponseEntity<CommonResponseDto<JourneyDetailEntity>> updateJourneyDetailsById(
+            @RequestBody JourneyDetailEntity journeyDetail) {
         JourneyDetailEntity updatedJourneyDetail = journeyDetailService.updateJourneyDetailById(journeyDetail);
-        CommonResponseDto<JourneyDetailEntity> crd = new CommonResponseDto<>("Journey details updated successfully", updatedJourneyDetail);
-        return new ResponseEntity<>(crd, HttpStatus.OK);
+        return ResponseBuilder.success(HttpStatus.OK, "Journey details updated successfully", updatedJourneyDetail);
     }
 
     @DeleteMapping("/{journeyId}")
     public ResponseEntity<CommonResponseDto<Void>> deleteJourneyDetailsById(@PathVariable Long journeyId) {
         journeyDetailService.deleteJourneyDetailById(journeyId);
-        CommonResponseDto<Void> crd = new CommonResponseDto<>("Journey details deleted successfully", null);
-        return new ResponseEntity<>(crd, HttpStatus.NO_CONTENT);
+        return ResponseBuilder.success(HttpStatus.OK, "Journey details deleted successfully", null);
     }
+
+    // Get journey list by filter with courier details
+
+    @PostMapping("/filter")
+    public ResponseEntity<CommonResponseDto<List<FilteredJourneyDetailsResponseDto>>> getJourneysByCourierConditions(
+            @RequestBody CourierDetailResponseDto courierDetails) throws JsonMappingException, JsonProcessingException {
+
+        logger.info("courier details in driver = {}", courierDetails);
+        // Implement the logic to filter journeys based on courier details
+        var journeyDetails = journeyDetailService.getJourneyDetailByValidStatus();
+
+        logger.info("journey details after valid status = {}", journeyDetails);
+
+        var result = journeyDetailService.filterJourneyByState(courierDetails.getCourierSourceCoordinate(),
+                courierDetails.getCourierDestinationCoordinate(), journeyDetails);
+
+        var response =  ResponseBuilder.success(HttpStatus.OK, "Journey details fetched successfully", result);
+        logger.info("Response = {}", result);
+        return response;
+        
+    }
+    
 }

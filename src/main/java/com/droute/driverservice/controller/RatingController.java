@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.droute.driverservice.dto.CommonResponseDto;
+import com.droute.driverservice.dto.response.CommonResponseDto;
+import com.droute.driverservice.dto.response.ResponseBuilder;
 import com.droute.driverservice.entity.RatingEntity;
 import com.droute.driverservice.service.RatingService;
 
@@ -24,31 +25,27 @@ public class RatingController {
     private RatingService ratingService;
 
     @PostMapping
-    public ResponseEntity<CommonResponseDto<RatingEntity>> postRating(@RequestBody RatingEntity rating) {
+    public <T> ResponseEntity<CommonResponseDto<RatingEntity>> postRating(@RequestBody RatingEntity rating) {
         RatingEntity savedRating = ratingService.postRating(rating);
-        CommonResponseDto<RatingEntity> crd = new CommonResponseDto<>("Rating created successfully", savedRating);
-        return ResponseEntity.status(HttpStatus.CREATED).body(crd);
+        return ResponseBuilder.success(HttpStatus.CREATED, "Rating created successfully", savedRating);
     }
 
     @GetMapping("/{ratingId}")
     public ResponseEntity<CommonResponseDto<RatingEntity>> getRatingById(@PathVariable Long ratingId) {
         RatingEntity rating = ratingService.getRatingById(ratingId);
-        CommonResponseDto<RatingEntity> crd = new CommonResponseDto<>("Rating fetched successfully", rating);
-        return new ResponseEntity<>(crd, HttpStatus.OK);
+        return ResponseBuilder.success(HttpStatus.OK, "Rating fetched successfully", rating);
     }
 
     @PutMapping("/{ratingId}")
     public ResponseEntity<CommonResponseDto<RatingEntity>> updateRatingById(@PathVariable Long ratingId, @RequestBody RatingEntity rating) {
         rating.setRatingId(ratingId);  // Ensure the correct ID is set for updating
         RatingEntity updatedRating = ratingService.updateRatingById(rating);
-        CommonResponseDto<RatingEntity> crd = new CommonResponseDto<>("Rating updated successfully", updatedRating);
-        return new ResponseEntity<>(crd, HttpStatus.OK);
+        return ResponseBuilder.success(HttpStatus.OK, "Rating updated successfully", updatedRating);
     }
 
     @DeleteMapping("/{ratingId}")
     public ResponseEntity<CommonResponseDto<Void>> deleteRatingById(@PathVariable Long ratingId) {
         ratingService.deleteRatingById(ratingId);
-        CommonResponseDto<Void> crd = new CommonResponseDto<>("Rating deleted successfully", null);
-        return new ResponseEntity<>(crd, HttpStatus.NO_CONTENT);
+        return ResponseBuilder.success(HttpStatus.OK, "Rating deleted successfully", null);
     }
 }

@@ -1,7 +1,7 @@
 package com.droute.driverservice.enums;
 
 public enum JourneyStatus {
-    PENDING,
+    NOT_STARTED,
     IN_PROGRESS,
     COMPLETED,
     CANCELLED,
