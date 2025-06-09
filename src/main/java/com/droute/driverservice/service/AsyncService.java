@@ -171,6 +171,8 @@ public class AsyncService {
 
             journeyPointsRepository.saveAll(journeyPointsList);
 
+            logger.info("Journey points saved successfully....");
+
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("Error in saveJourneyPointsAsync: " + e.getMessage());
