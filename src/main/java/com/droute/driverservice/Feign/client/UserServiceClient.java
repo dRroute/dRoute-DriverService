@@ -15,7 +15,7 @@ import com.droute.driverservice.dto.request.ResetPasswordRequestDTO;
 import com.droute.driverservice.dto.response.CommonResponseDto;
 
 @Component
-@FeignClient(name = "droute-cloud-gateway", path = "/api/user")
+@FeignClient(name = "droute-cloud-gateway", path = "/api/user")   
 // @FeignClient(name = "droute-user-service", path = "/api/user")
 public interface UserServiceClient {
 

@@ -55,6 +55,11 @@ public class JourneyDetailController {
         JourneyDetailEntity journeyDetail = journeyDetailService.getJourneyDetailById(journeyId);
         return ResponseBuilder.success(HttpStatus.OK, "Journey details fetched successfully", journeyDetail);
     }
+    @GetMapping("")
+    public ResponseEntity<CommonResponseDto<List<FilteredJourneyDetailsResponseDto>>> getAllJourneyDetails() {
+        var journeyDetails = journeyDetailService.getAllJourneyDetails();
+        return ResponseBuilder.success(HttpStatus.OK, "Journey details fetched successfully", journeyDetails);
+    }
 
     @GetMapping("/{journeyId}/driver-detail")
     public ResponseEntity<CommonResponseDto<FilteredJourneyDetailsResponseDto >> getJourneyDetailsWithDriverDetailsByJourneyId(@PathVariable Long journeyId) {

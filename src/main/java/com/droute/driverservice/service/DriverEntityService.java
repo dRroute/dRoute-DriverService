@@ -69,6 +69,8 @@ public class DriverEntityService {
 	public CompleteDriverDetailsResponseDto loginDriver(LoginUserRequestDto loginDetails)
 			throws UserServiceException {
 		logger.info("login driver called.");
+
+		//Call user service to get and verify the credentials
 		var user = userServiceClient.loginUser(loginDetails).getData();
 
 		logger.info("User logged in successfully: {}", user);

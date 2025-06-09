@@ -65,6 +65,7 @@ public class JourneyDetailService {
                 .latitude(journeyDetail.getJourneySource().getLatitude())
                 .address(journeyDetail.getJourneySource().getAddress())
                 .city(journeyDetail.getJourneySource().getCity())
+                .state(journeyDetail.getJourneySource().getState())
                 .pinCode(journeyDetail.getJourneySource().getPinCode())
                 .country(journeyDetail.getJourneySource().getCountry())
                 .build();
@@ -74,6 +75,8 @@ public class JourneyDetailService {
                 .latitude(journeyDetail.getJourneyDestination().getLatitude())
                 .address(journeyDetail.getJourneyDestination().getAddress())
                 .city(journeyDetail.getJourneyDestination().getCity())
+                .state(journeyDetail.getJourneyDestination().getState())
+
                 .pinCode(journeyDetail.getJourneyDestination().getPinCode())
                 .country(journeyDetail.getJourneyDestination().getCountry())
                 .build();
@@ -338,6 +341,27 @@ public class JourneyDetailService {
             System.out.println("No geocode result for point " + latLng);
         }
         return stateName;
+    }
+
+    public List<FilteredJourneyDetailsResponseDto> getAllJourneyDetails() {
+
+        var journeys = journeyDetailRepository.findAll();
+        List<FilteredJourneyDetailsResponseDto> data = new ArrayList<>();
+
+        for (JourneyDetailEntity journey : journeys) {
+
+            
+            var driver = driverEntityService.getDriverById(journey.getDriverId());
+
+            data.add(FilteredJourneyDetailsResponseDto.builder()
+                      .journey(journey)    
+                      .driver(driver)
+                      .averageDriverRating(driverEntityService.getDriverAvgRating(driver.getDriverId())
+                      ).build());
+                
+        }
+
+        return data;
     }
 
 }
